@@ -16,6 +16,29 @@ pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tessera
 
 
 
+
+def read_image():
+    # Return a string of text from IMG_PATH
+
+    if not os.path.exists(IMG_PATH):
+        return None
+
+    img = cv2.imread(IMG_NAME)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    resized = cv2.resize(thresh, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+
+    
+    cv2.imshow('current image', resized)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    text = pytesseract.image_to_string(resized)
+    return text
+
+
+
+
 # WIP
 class GetCog(commands.Cog):
     '''
@@ -29,7 +52,6 @@ class GetCog(commands.Cog):
     @commands.command()
     async def test(self, ctx, arg="No arg given"):
         await ctx.send(arg)
-
 
 
 # WIP
@@ -54,9 +76,11 @@ class EditCog(commands.Cog):
         await attachment.save(IMG_PATH)
 
         await ctx.send('Testing pytesseract image reading...\n\n')
-        await ctx.send(pytesseract.image_to_string(Image.open(IMG_NAME)))
+        #await ctx.send(pytesseract.image_to_string(Image.open(IMG_NAME)))
+        loop = asyncio.get_running_loop()
+        img_text = await loop.run_in_executor(self.bot.executor, read_image)
+        await ctx.send(img_text)
         await ctx.send('Complete!')
-
 
 
 # WIP
@@ -73,19 +97,33 @@ class StatsBot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(command_prefix='$', intents=intents)
+        self.executor = ProcessPoolExecutor()
 
     async def setup_hook(self):
         await self.add_cog(GetCog(self))
         await self.add_cog(EditCog(self))
         print(f'Logged in as {self.user}')
-        print(f'Image path: {IMG_PATH}')
+
+    async def close(self):
+        self.executor.shutdown()
+        await super().close()
+
 
 
 
 async def main():
     bot = StatsBot()
     async with bot:
-        await bot.start(os.getenv("BOT_TOKEN"))
+        try:
+            await bot.start(os.getenv("BOT_TOKEN"))
+        except KeyboardInterrupt:
+            print('Shutting down...')
+        finally:
+            if not bot.is_closed():
+                await bot.close()
 
 if __name__== "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass

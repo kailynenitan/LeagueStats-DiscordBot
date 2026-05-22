@@ -1,10 +1,20 @@
 import asyncio
+import cv2
 import discord
 import os
+import pytesseract
+from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 from dotenv import load_dotenv
+from PIL import Image
+
+IMG_NAME = 'stats.jpg'
+IMG_PATH = os.path.join(os.getcwd(), IMG_NAME)
 
 load_dotenv()
+pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract'
+
+
 
 # WIP
 class GetCog(commands.Cog):
@@ -21,6 +31,7 @@ class GetCog(commands.Cog):
         await ctx.send(arg)
 
 
+
 # WIP
 class EditCog(commands.Cog):
     '''
@@ -30,11 +41,22 @@ class EditCog(commands.Cog):
         self.bot = bot
 
     # SAVE AN ATTACHMENT TO THE CURRENT WORKING DIRECTORY
+    # DELETE LATER
     @commands.command()
     async def upload(self, ctx, attachment: discord.Attachment):
-        path = os.path.join(os.getcwd(), 'stats.jpg')
-        await attachment.save(path)
+        await attachment.save(IMG_PATH)
         print('Successfully saved attachment')
+
+    @commands.command()
+    async def update(self, ctx, attachment: discord.Attachment):
+        # Update the SQL database from a screenshot provided by the user
+
+        await attachment.save(IMG_PATH)
+
+        await ctx.send('Testing pytesseract image reading...\n\n')
+        await ctx.send(pytesseract.image_to_string(Image.open(IMG_NAME)))
+        await ctx.send('Complete!')
+
 
 
 # WIP
@@ -56,6 +78,7 @@ class StatsBot(commands.Bot):
         await self.add_cog(GetCog(self))
         await self.add_cog(EditCog(self))
         print(f'Logged in as {self.user}')
+        print(f'Image path: {IMG_PATH}')
 
 
 

@@ -1,2 +1,8 @@
 # Ignore file with bot token
 .env
+
+# Ignore picture files
+.jpg
+.jpeg
+.png
+.pdf

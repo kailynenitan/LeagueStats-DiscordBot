@@ -1,6 +1,6 @@
 import discord
-from discord.ext import commands
 import os
+from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,13 +8,14 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 
+'''
 client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
 
-'''@client.event
+@client.event
 async def on_message(message):
     if message.author == client.user:
         return
@@ -30,9 +31,13 @@ async def on_message(message):
 
 bot = commands.Bot(command_prefix='$', intents=intents)
 
-@bot.command()
-async def test(ctx):
-    await ctx.send('bot command works')
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
 
-client.run(os.getenv("BOT_TOKEN"))
+@bot.command()
+async def test(ctx, arg):
+    await ctx.send(arg)
+
+bot.run(os.getenv("BOT_TOKEN"))
 

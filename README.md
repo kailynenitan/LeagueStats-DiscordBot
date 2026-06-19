@@ -10,3 +10,4 @@ A Discord chat bot to keep track of League of Legends stats from match history s
 * OpenCV library
 * python-dotenv library
 * pytesseract library
+* tesseract library

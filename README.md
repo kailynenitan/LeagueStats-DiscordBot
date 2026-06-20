@@ -2,6 +2,8 @@
 
 A Discord chat bot to keep track of League of Legends stats from match history screenshots.
 
+This project is a work in progress. 
+
 ## Prerequisites
 
 * Python 3.14

@@ -1,9 +1,9 @@
 import asyncio
 import cv2
 import discord
+import easyocr
 import numpy as np
 import os
-import pytesseract
 import string
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
@@ -29,8 +29,7 @@ REGIONS = {
 }
 
 load_dotenv()
-pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract'
-
+reader = easyocr.Reader(['en'], gpu=False)
 
 
 # WIP
@@ -41,30 +40,23 @@ def read_region(img, region):
     r_y = region[1]
     r_w = region[2]
     r_h = region[3]
-    line_height = 80
-    whitelist = string.digits + string.ascii_letters + '/'
-    config = f'--psm 7 -c tessedit_char_whitelist={whitelist}'
     
     crop = img[r_y : r_y + r_h, r_x : r_x + r_w]
 
-    if region == REGIONS['game_result']:
-        return pytesseract.image_to_string(crop, config = config)
     
-    text = ''
-    for line in range(0, line_height * 5, line_height):
-        cv2.imshow('one line', crop[line: line + line_height, 0: r_w])
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        line_text = pytesseract.image_to_string(
-            crop[line: line + line_height, 0: r_w],
-            config = config)
-        text = text + '\n' + line_text
+    cv2.imshow("crop", crop)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
 
-    return text
+    if region == REGIONS['game_result']:
+        return reader.readtext(crop, detail=0)
+    
+    return reader.readtext(crop, detail=0)
     
 
 # WIP
-def read_stats():
+def update_database():
     if not os.path.exists(IMG_PATH):
         return None
 
@@ -74,19 +66,24 @@ def read_stats():
     resized = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
 
     '''
-    cv2.imshow('current image', resized)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    result = reader.readtext(resized, detail=0)
+    text = ''
+    for r in result:
+        text = text + r + '\n'
     '''
     
-    # text = pytesseract.image_to_string(resized)
-    return read_region(resized, REGIONS['t1_unames'])
+    result = read_region(resized, REGIONS['t2_kda'])
+    text = ''
+    for r in result:
+        text = text + r + '\n'
+    
+    return text
 
 
 
 # WIP
 class GetCog(commands.Cog):
-    '''
+    '''  
     Holds commands to fetch information from SQL database
     '''
     
@@ -107,27 +104,21 @@ class EditCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # SAVE AN ATTACHMENT TO THE CURRENT WORKING DIRECTORY
-    # DELETE LATER
-    @commands.command()
-    async def upload(self, ctx, attachment: discord.Attachment):
-        await attachment.save(IMG_PATH)
-        print('Successfully saved attachment')
-
     @commands.command()
     async def update(self, ctx, attachment: discord.Attachment):
         # Update the SQL database from a screenshot provided by the user
-
+        
         await attachment.save(IMG_PATH)
 
-        await ctx.send('Testing pytesseract image reading...\n')
-        #await ctx.send(pytesseract.image_to_string(Image.open(IMG_NAME)))
+        await ctx.send('Testing easyocr image reading...\n')
+
         loop = asyncio.get_running_loop()
-        img_text = await loop.run_in_executor(self.bot.executor, read_stats)
+        img_text = await loop.run_in_executor(self.bot.executor, update_database)
+
         await ctx.send(img_text)
+        await ctx.send('Test complete!')
 
         await os.remove('stats.jpg')
-        await ctx.send('Complete!')
 
 
 # WIP
@@ -154,6 +145,11 @@ class StatsBot(commands.Bot):
     async def close(self):
         self.executor.shutdown()
         await super().close()
+
+    @commands.command()
+    async def shutdown(self, ctx):
+        await ctx.send('Bot shutting down...')
+        await self.bot.close()
 
 
 

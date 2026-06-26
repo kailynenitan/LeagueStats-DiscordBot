@@ -11,5 +11,5 @@ This project is a work in progress.
 * discord library
 * OpenCV library
 * python-dotenv library
-* pytesseract library
-* tesseract library
+* easyocr library
+* numpy library

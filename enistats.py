@@ -12,51 +12,58 @@ from PIL import Image
 
 IMG_NAME = 'stats.jpg'
 IMG_PATH = os.path.join(os.getcwd(), IMG_NAME)
-REGIONS = {
-    't1_unames': (326, 620, 360, 400),
-    't1_levels': (176, 620, 65, 400),
-    't1_kda': (1186, 620, 275, 400),
-    't1_cs': (1494, 620, 120, 400),
-    't1_gold': (1635, 620, 200, 400),
-    
-    't2_unames': (327, 1110, 360, 400),
-    't2_levels': (178, 1110, 65, 400),
-    't2_kda': (1188, 1110, 275, 400),
-    't2_cs': (1491, 1110, 120, 400),
-    't2_gold': (1634, 1110, 200, 400),
-    
-    'game_result': (203, 220, 250, 75)
-}
 
 load_dotenv()
 reader = easyocr.Reader(['en'], gpu=False)
 
+# Areas of stats proportional to match history screenshots in pixels
+# The format of each tuple is (x-coord, y-coord, width, height)
+DATA_REGIONS = {
+    'unames':       (0.11145, 0.37507, 0.12307, 0.53841),
+    'levels':       (0.06017, 0.37507, 0.02222, 0.53841),
+    'kills':        (0.41000, 0.37507, 0.02051, 0.53841),
+    'deaths':       (0.44000, 0.37507, 0.02051, 0.53841),
+    'assists':      (0.46871, 0.37507, 0.02051, 0.53841),
+    'cs':           (0.51076, 0.37507, 0.04102, 0.53841),
+    'gold':         (0.55897, 0.37507, 0.06837, 0.53841),
+    'game_result':  (0.06940, 0.13309, 0.08547, 0.04537)
+}
+
 
 # WIP
-def read_region(img, region):
+def read_region(img, arg):
     # Read the text in a specified region of an image
 
-    r_x = region[0]
-    r_y = region[1]
-    r_w = region[2]
-    r_h = region[3]
-    
-    crop = img[r_y : r_y + r_h, r_x : r_x + r_w]
+    region = DATA_REGIONS[arg]
+    img_height, img_width = img.shape[:2]
+    x = int(region[0] * img_width)
+    y = int(region[1] * img_height)
+    w = int(region[2] * img_width)
+    h = int(region[3] * img_height)
 
+    crop = img[y:y + h, x:x + w]
+
+    '''
+    padded = cv2.copyMakeBorder(
+        crop,
+        top=20, bottom=20, left=20, right=20,
+        borderType=cv2.BORDER_CONSTANT,
+        value=[255, 255, 255]
+    )
     
-    cv2.imshow("crop", crop)
+    cv2.imshow('stats', padded)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-
-    if region == REGIONS['game_result']:
-        return reader.readtext(crop, detail=0)
-    
-    return reader.readtext(crop, detail=0)
+    canvas = np.ones((h + 40, (w + 40) * 2), dtype=np.uint8) * 255
+    cv2.putText(canvas, "0", (20, int((h + 40) * 0.7)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 0, 2, cv2.LINE_AA)
+    canvas[0:h+40, (w+40):] = padded
+    '''
+    return reader.readtext(crop, paragraph=False, detail=0)
     
 
 # WIP
-def update_database():
+def update_database(arg):
     if not os.path.exists(IMG_PATH):
         return None
 
@@ -64,22 +71,51 @@ def update_database():
     img = cv2.imread(IMG_NAME)
     gray = cv2.bitwise_not(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
     resized = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    '''
+    _, thresh = cv2.threshold(resized, 120, 255, cv2.THRESH_BINARY)
+    '''
+    result = read_region(resized, arg)
 
     '''
-    result = reader.readtext(resized, detail=0)
     text = ''
     for r in result:
+        if r.startswith("0") and len(r) > 1:
+            r = r[1:]
         text = text + r + '\n'
     '''
-    
-    result = read_region(resized, REGIONS['t2_kda'])
     text = ''
     for r in result:
         text = text + r + '\n'
-    
+        
     return text
 
 
+
+class TestCog(commands.Cog):
+    '''
+    The commands in this cog are used to test commands and features of other cogs.
+    All commands in this cog are experimental and not meant for regular bot use.
+    '''
+
+    def __init__(self, bot):
+        self.bot = bot
+
+    # SEND ONE WORD FOLLOWING COMMAND CAll BACK TO CHANNEL
+    @commands.command()
+    async def test(self, ctx, arg="No arg given"):
+        await ctx.send(arg)
+
+    @commands.command()
+    async def getSize(self, ctx, attachment: discord.Attachment):
+        await ctx.send('Getting image size...')
+        # await ctx.send('height: ' + str(attachment.height) + '\twidth: ' + str(attachment.width))
+        '''
+        await attachment.save(IMG_PATH)
+        img = Image.open(IMG_PATH).size
+        w, h = img.size
+        await ctx.send(f'width: {w}     height: {h}')
+        await os.remove('stats.jpg')
+        '''
 
 # WIP
 class GetCog(commands.Cog):
@@ -89,11 +125,6 @@ class GetCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-
-    # SEND ONE WORD FOLLOWING COMMAND CAll BACK TO CHANNEL
-    @commands.command()
-    async def test(self, ctx, arg="No arg given"):
-        await ctx.send(arg)
 
 
 # WIP
@@ -105,15 +136,15 @@ class EditCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def update(self, ctx, attachment: discord.Attachment):
+    async def update(self, ctx, attachment: discord.Attachment,  arg='No arg given'):
         # Update the SQL database from a screenshot provided by the user
         
         await attachment.save(IMG_PATH)
-
         await ctx.send('Testing easyocr image reading...\n')
+        # await ctx.send('Arg provided is: ' + arg)
 
         loop = asyncio.get_running_loop()
-        img_text = await loop.run_in_executor(self.bot.executor, update_database)
+        img_text = await loop.run_in_executor(self.bot.executor, update_database, arg)
 
         await ctx.send(img_text)
         await ctx.send('Test complete!')
@@ -140,17 +171,12 @@ class StatsBot(commands.Bot):
     async def setup_hook(self):
         await self.add_cog(GetCog(self))
         await self.add_cog(EditCog(self))
+        # await self.add_cog(TestCog(self))
         print(f'Logged in as {self.user}')
-
+    
     async def close(self):
         self.executor.shutdown()
         await super().close()
-
-    @commands.command()
-    async def shutdown(self, ctx):
-        await ctx.send('Bot shutting down...')
-        await self.bot.close()
-
 
 
 
@@ -160,7 +186,7 @@ async def main():
         try:
             await bot.start(os.getenv("BOT_TOKEN"))
         except KeyboardInterrupt:
-            print('Shutting down...')
+            print('\n[Ctrl+C] detected. Shutting down...')
         finally:
             if not bot.is_closed():
                 await bot.close()

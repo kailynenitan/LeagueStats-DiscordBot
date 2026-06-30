@@ -59,54 +59,11 @@ def read_region(img, arg):
 
     crop = img[y:y + h, x:x + w]
 
-    '''
-    padded = cv2.copyMakeBorder(
-        crop,
-        top=20, bottom=20, left=20, right=20,
-        borderType=cv2.BORDER_CONSTANT,
-        value=[255, 255, 255]
-    )
-    
-    cv2.imshow('stats', padded)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    
-    canvas = np.ones((h + 40, (w + 40) * 2), dtype=np.uint8) * 255
-    cv2.putText(canvas, "0", (20, int((h + 40) * 0.7)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 0, 2, cv2.LINE_AA)
-    canvas[0:h+40, (w+40):] = padded
-    '''
-
-    '''
     cv2.imshow(arg, crop)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    '''
 
-    '''
-    # Read the stats from the specified region one line at a time
-    stats_list = []
-    row_height = int(h / 5)
-    for row_num in range(5):
-        row_y = row_num * row_height
-        row_img = crop[row_y: row_y + row_height, 0: w]
-
-        cv2.imshow(arg, row_img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-        stats_list.append(reader.readtext(row_img, detail=0)[0])
-    return stats_list
-    '''
-
-    '''
-    boxes, _ = reader.detect(crop)
-    for b in boxes:
-        x_min, x_max, y_min, y_max = b
-        cv2.imshow('box', crop[y_min: y_max, x_min: x_max])
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    '''
-    return reader.readtext(crop, paragraph=False, detail=0, low_text=0.3, min_size=5)
+    return reader.readtext(crop, detail=0, paragraph=False)
     
     
 
@@ -117,24 +74,23 @@ def update_database(arg):
 
     # Create a resized threshold image with black text on a white background
     img = cv2.imread(IMG_NAME)
-    gray = cv2.bitwise_not(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    thresh = cv2.adaptiveThreshold(
-        resized, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-        cv2.THRESH_BINARY_INV, 11, 2
-    )
-    '''
-    _, thresh = cv2.threshold(resized, 120, 255, cv2.THRESH_BINARY)
-    '''
-    result = read_region(resized, arg)
+    
+    
+    denoised = cv2.GaussianBlur(resized, (3, 3), 0)
+    _, thresh = cv2.threshold(denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    inverted = cv2.bitwise_not(thresh)
+    
+    kernel = np.ones((2, 2), np.uint8)
+    cleaned = cv2.morphologyEx(inverted, cv2.MORPH_CLOSE, kernel, iterations=1)
 
-    '''
-    text = ''
-    for r in result:
-        if r.startswith("0") and len(r) > 1:
-            r = r[1:]
-        text = text + r + '\n'
-    '''
+    cv2.imshow('processed img', cleaned)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    result = read_region(cleaned, arg)
+
     text = ''
     for r in result:
         text = text + r + '\n'

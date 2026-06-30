@@ -97,12 +97,15 @@ def read_region(img, arg):
         stats_list.append(reader.readtext(row_img, detail=0)[0])
     return stats_list
     '''
+
+    '''
     boxes, _ = reader.detect(crop)
     for b in boxes:
         x_min, x_max, y_min, y_max = b
         cv2.imshow('box', crop[y_min: y_max, x_min: x_max])
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+    '''
     return reader.readtext(crop, paragraph=False, detail=0, low_text=0.3, min_size=5)
     
     
@@ -115,7 +118,11 @@ def update_database(arg):
     # Create a resized threshold image with black text on a white background
     img = cv2.imread(IMG_NAME)
     gray = cv2.bitwise_not(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
-    resized = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    thresh = cv2.adaptiveThreshold(
+        resized, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+        cv2.THRESH_BINARY_INV, 11, 2
+    )
     '''
     _, thresh = cv2.threshold(resized, 120, 255, cv2.THRESH_BINARY)
     '''

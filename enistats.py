@@ -42,7 +42,7 @@ DATA_REGIONS = {
     't2_deaths':    (0.44000, 0.67150, 0.02051, 0.24198),
     't2_assists':   (0.46871, 0.67150, 0.02051, 0.24198),
     't2_cs':        (0.51076, 0.67150, 0.04102, 0.24198),
-    't2_gold':      (0.55897, 0.67150, 0.06837, 0.24198),
+    't2_gold':      (0.55897, 0.67150, 0.06837, 0.24198)
 }
 
 
@@ -82,22 +82,29 @@ def read_region(img, arg):
     cv2.destroyAllWindows()
     '''
 
+    '''
     # Read the stats from the specified region one line at a time
     stats_list = []
     row_height = int(h / 5)
-    for row_num in range(4):
+    for row_num in range(5):
         row_y = row_num * row_height
         row_img = crop[row_y: row_y + row_height, 0: w]
-
-        stats_list.append(reader.readtext(row_img, detail=0)[0])
 
         cv2.imshow(arg, row_img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        
-    
-    # return reader.readtext(crop, paragraph=False, detail=0)
+
+        stats_list.append(reader.readtext(row_img, detail=0)[0])
     return stats_list
+    '''
+    boxes, _ = reader.detect(crop)
+    for b in boxes:
+        x_min, x_max, y_min, y_max = b
+        cv2.imshow('box', crop[y_min: y_max, x_min: x_max])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    return reader.readtext(crop, paragraph=False, detail=0, low_text=0.3, min_size=5)
+    
     
 
 # WIP

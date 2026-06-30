@@ -26,7 +26,23 @@ DATA_REGIONS = {
     'assists':      (0.46871, 0.37507, 0.02051, 0.53841),
     'cs':           (0.51076, 0.37507, 0.04102, 0.53841),
     'gold':         (0.55897, 0.37507, 0.06837, 0.53841),
-    'game_result':  (0.06940, 0.13309, 0.08547, 0.04537)
+    'game_result':  (0.06940, 0.13309, 0.08547, 0.04537),
+
+    't1_unames':    (0.11145, 0.37507, 0.12307, 0.24198),
+    't1_levels':    (0.06017, 0.37507, 0.02222, 0.24198),
+    't1_kills':     (0.41000, 0.37507, 0.02051, 0.24198),
+    't1_deaths':    (0.44000, 0.37507, 0.02051, 0.24198),
+    't1_assists':   (0.46871, 0.37507, 0.02051, 0.24198),
+    't1_cs':        (0.51076, 0.37507, 0.04102, 0.24198),
+    't1_gold':      (0.55897, 0.37507, 0.06837, 0.24198),
+
+    't2_unames':    (0.11145, 0.67150, 0.12307, 0.24198),
+    't2_levels':    (0.06017, 0.67150, 0.02222, 0.24198),
+    't2_kills':     (0.41000, 0.67150, 0.02051, 0.24198),
+    't2_deaths':    (0.44000, 0.67150, 0.02051, 0.24198),
+    't2_assists':   (0.46871, 0.67150, 0.02051, 0.24198),
+    't2_cs':        (0.51076, 0.67150, 0.04102, 0.24198),
+    't2_gold':      (0.55897, 0.67150, 0.06837, 0.24198),
 }
 
 
@@ -59,7 +75,29 @@ def read_region(img, arg):
     cv2.putText(canvas, "0", (20, int((h + 40) * 0.7)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 0, 2, cv2.LINE_AA)
     canvas[0:h+40, (w+40):] = padded
     '''
-    return reader.readtext(crop, paragraph=False, detail=0)
+
+    '''
+    cv2.imshow(arg, crop)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    '''
+
+    # Read the stats from the specified region one line at a time
+    stats_list = []
+    row_height = int(h / 5)
+    for row_num in range(4):
+        row_y = row_num * row_height
+        row_img = crop[row_y: row_y + row_height, 0: w]
+
+        stats_list.append(reader.readtext(row_img, detail=0)[0])
+
+        cv2.imshow(arg, row_img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        
+    
+    # return reader.readtext(crop, paragraph=False, detail=0)
+    return stats_list
     
 
 # WIP

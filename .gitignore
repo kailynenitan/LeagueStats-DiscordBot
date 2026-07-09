@@ -1,6 +1,9 @@
 # Ignore file with bot token
 .env
 
+# Ignore directories
+__pycache__
+
 # Ignore picture files
 .jpg
 .jpeg

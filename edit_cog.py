@@ -2,6 +2,7 @@ import asyncio
 import cv2
 import discord
 import os
+import numpy as np
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
@@ -10,7 +11,7 @@ import reader
 
 
 # WIP
-def update_database(arg):
+def get_stats(arg):
     if not os.path.exists(config.IMG_PATH):
         return None
 
@@ -19,17 +20,15 @@ def update_database(arg):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 
-    '''    
-    denoised = cv2.GaussianBlur(resized, (3, 3), 0)
-    _, thresh = cv2.threshold(denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    inverted = cv2.bitwise_not(thresh)
-    
-    kernel = np.ones((2, 2), np.uint8)
-    cleaned = cv2.morphologyEx(inverted, cv2.MORPH_CLOSE, kernel, iterations=1)
-    '''
+    # Cover the in-game item icons in the pre-processed image
+    resized_height, resized_width = resized.shape[:2]
+    (mask_x, mask_y, mask_w, mask_h) = config.DATA_REGIONS['mask_items']
+    mask_start = (int(resized_width * mask_x), int(resized_height * mask_y))
+    mask_end = (int(resized_width * (mask_x + mask_w)), int(resized_height * (mask_y + mask_h)))
+    cv2.rectangle(resized, mask_start, mask_end, (0, 0, 0), -1)
     
     '''
-    cv2.imshow('processed img', cleaned)
+    cv2.imshow('processed img', resized)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     '''
@@ -52,15 +51,26 @@ class EditCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def update(self, ctx, attachment: discord.Attachment,  arg='No arg given'):
+    @commands.command(name='read_image')
+    async def updateImage(self, ctx, attachment: discord.Attachment,  arg='No arg given'):
         # Update the SQL database from a screenshot provided by the user
+
+        '''
+        (async)img = attachment from Discord
+
+        retrieve stats for each user using ocr
+
+        send stats to Discord for confirmation
+
+        update database
+        '''
+
         
         await attachment.save(config.IMG_PATH)
         await ctx.send('Testing easyocr image reading...\n')
 
         loop = asyncio.get_running_loop()
-        img_text = await loop.run_in_executor(self.bot.executor, update_database, arg)
+        img_text = await loop.run_in_executor(self.bot.executor, get_stats, arg)
 
         await ctx.send(img_text)
         await ctx.send('Test complete!')

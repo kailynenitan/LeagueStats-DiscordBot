@@ -1,7 +1,7 @@
-import config
 import easyocr
 import numpy as np
 
+import config
 
 '''
 A class for the OCR (easyocr) to be used with the cogs.

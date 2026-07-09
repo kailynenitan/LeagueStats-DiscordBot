@@ -22,7 +22,7 @@ def get_stats(arg):
 
     # Cover the in-game item icons in the pre-processed image
     resized_height, resized_width = resized.shape[:2]
-    (mask_x, mask_y, mask_w, mask_h) = config.DATA_REGIONS['mask_items']
+    (mask_x, mask_y, mask_w, mask_h) = config.REGIONS['mask_items']
     mask_start = (int(resized_width * mask_x), int(resized_height * mask_y))
     mask_end = (int(resized_width * (mask_x + mask_w)), int(resized_height * (mask_y + mask_h)))
     cv2.rectangle(resized, mask_start, mask_end, (0, 0, 0), -1)

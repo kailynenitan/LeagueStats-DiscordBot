@@ -5,9 +5,24 @@ IMG_PATH = os.path.join(os.getcwd(), IMG_NAME)
 
 # Areas of stats proportional to match history screenshots in pixels
 # The format of each tuple is (x-coord, y-coord, width, height)
-DATA_REGIONS = {
+REGIONS = {
     'mask_items':   (0.23384, 0.33030, 0.17230, 0.58983),
+
+
+
+    # stats
     'game_result':  (0.06940, 0.13309, 0.08547, 0.04537),
+
+    'p1': ,
+    'p2': ,
+    'p3': ,
+    'p4': ,
+    'p5': ,
+    'p6': ,
+    'p7': ,
+    'p8': ,
+    'p9': ,
+    'p10': ,
     
     'unames':       (0.11145, 0.37507, 0.12307, 0.53841),
     'levels':       (0.06017, 0.37507, 0.02222, 0.53841),

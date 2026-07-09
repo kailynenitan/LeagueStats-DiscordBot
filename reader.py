@@ -14,7 +14,7 @@ class ImageReader(easyocr.Reader):
     def read_region(self, img, arg):
         # Read the text in a specified region of an image
 
-        region = config.DATA_REGIONS[arg]
+        region = config.REGIONS[arg]
         img_height, img_width = img.shape[:2]
         x = int(region[0] * img_width)
         y = int(region[1] * img_height)

@@ -10,8 +10,16 @@ import config
 import reader
 
 
+def mask_region(img, region):
+    # Cover an area of img specified by region with a black rectangle
+    img_height, img_width = img.shape[:2]
+    (x, y, w, h) = config.REGIONS[region]
+    mask_start = (int(img_width * x), int(img_height * y))
+    mask_end = (int(img_width * (x + w)), int(img_height * (y + h)))
+    cv2.rectangle(img, mask_start, mask_end, (0, 0, 0), -1)
+    
 # WIP
-def get_stats(arg):
+def get_stats(arg):    
     if not os.path.exists(config.IMG_PATH):
         return None
 
@@ -19,22 +27,21 @@ def get_stats(arg):
     img = cv2.imread(config.IMG_NAME)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-
-    # Cover the in-game item icons in the pre-processed image
-    resized_height, resized_width = resized.shape[:2]
-    (mask_x, mask_y, mask_w, mask_h) = config.REGIONS['mask_items']
-    mask_start = (int(resized_width * mask_x), int(resized_height * mask_y))
-    mask_end = (int(resized_width * (mask_x + mask_w)), int(resized_height * (mask_y + mask_h)))
-    cv2.rectangle(resized, mask_start, mask_end, (0, 0, 0), -1)
     
+    mask_region(resized, 'mask_items')
+    mask_region(resized, 'mask_slash1')
+    mask_region(resized, 'mask_slash2')
+
+    bitwise_not = cv2.bitwise_not(resized)
+
     '''
-    cv2.imshow('processed img', resized)
+    cv2.imshow('processed img', bitwise_not)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     '''
     
     text_reader = reader.ImageReader()
-    result = text_reader.read_region(resized, arg)
+    result = text_reader.read_region(bitwise_not, arg)
 
     text = ''
     for r in result:

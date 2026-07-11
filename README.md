@@ -13,3 +13,6 @@ This project is a work in progress.
 * python-dotenv library
 * easyocr library
 * numpy library
+
+## Goal
+This bot was created with the intention of being used to keep track of player stats in League of Legends games that are not tracked online like 5v5 custom games.

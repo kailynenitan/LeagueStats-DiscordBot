@@ -35,18 +35,32 @@ def get_stats(arg):
 # WIP
 class EditCog(commands.Cog):
     '''
-    Holds commands that will update/change the information in SQL database
+    Holds commands that will edit the information in SQL database
     '''
+    
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(name='read_image')
-    async def editFromImage(self, ctx, attachment: discord.Attachment, arg='No arg given'):
-        # Update the SQL database from a screenshot provided by the user
-        
-        await attachment.save(config.IMG_PATH)
-        await ctx.send('Testing easyocr image reading...\n')
+    async def editFromImage(self, ctx, arg):
+        '''Update the SQL database from a screenshot provided by the user
 
+        Args:
+            ctx: Text command from the user
+            attachment: Screenshot image of entire window of League of Legends game match history
+        '''
+        attachment_list = ctx.message.attachments
+        if not attachment_list:
+            await ctx.send('ERR: No attachment.')
+            return
+
+        for attachment in attachment_list:
+            if attachment.content_type != 'image/webp':
+                await ctx.send('ERR: Wrong attachment type.')
+                return
+
+        await attachment_list[0].save(config.IMG_PATH)
+        
         loop = asyncio.get_running_loop()
         img_text = await loop.run_in_executor(self.bot.executor, get_stats, arg)
 
@@ -54,6 +68,5 @@ class EditCog(commands.Cog):
             await ctx.send('No text read')
         else:
             await ctx.send(img_text)
-        await ctx.send('Test complete!')
 
         os.remove(config.IMG_NAME)

@@ -82,12 +82,12 @@ class ImageReader(easyocr.Reader):
         )
         
         # Show image crop
-        
+        '''
         cv2.imshow(arg, crop)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+        '''
         
-        # cv2.imwrite(f'{arg}', crop)
         return self.readtext(
             crop,
             detail=0,

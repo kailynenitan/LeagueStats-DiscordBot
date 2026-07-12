@@ -7,9 +7,9 @@ IMG_PATH = os.path.join(os.getcwd(), IMG_NAME)
 # The format of each tuple is (x-coord, y-coord, width, height)
 REGIONS = {
     # Areas to cover with black rectangles
-    'mask_items':   (0.24000, 0.00000, 0.33500, 1.0000),
-    'mask_slash1':  (0.63568, 0.00000, 0.018500, 1.0000),
-    'mask_slash2':  (0.69389, 0.00000, 0.018500, 1.0000),
+    'mask_items':   (0.24000, 0.00000, 0.34000, 1.0000),
+    'mask_slash1':  (0.63568, 0.00000, 0.02300, 1.0000),
+    'mask_slash2':  (0.69389, 0.00000, 0.02300, 1.0000),
     
 
     # Stats

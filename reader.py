@@ -1,10 +1,12 @@
 import cv2
 import easyocr
 import numpy as np
+import os
 import string
-
+from dotenv import load_dotenv
 import config
 
+load_dotenv()
 
 
 '''
@@ -12,7 +14,9 @@ A class for the OCR (easyocr) to be used with the cogs.
 '''
 class ImageReader(easyocr.Reader):
     def __init__(self):
-        super().__init__(['en'], gpu=False)
+        use_gpu_str = os.getenv("USE_GPU", "false").lower()
+        use_gpu = use_gpu_str in ("true", "t", "yes", "y", "1")
+        super().__init__(['en'], gpu=use_gpu)
 
     def __get_region_coord(self, img, region):
         # Return x, y, w, h of a specified region

@@ -18,7 +18,20 @@ class ImageReader(easyocr.Reader):
         use_gpu = use_gpu_str in ("true", "t", "yes", "y", "1")
         super().__init__(['en'], gpu=use_gpu)
 
+        self.image_str = 'stats.jpg'
+        self.image_path = os.path.join(os.getcwd(), self.image_str)
+
     def __get_region_coord(self, img, region):
+        '''
+        Get the (x,y) coordinates, width, and height of an area of an image to get specific stats.
+
+        Args:
+            img: A string of the name of the image
+            region: A string to specify the stats to retrieve from img
+
+        Returns:
+            Four integers of the x-coordinate, y-coordinate, width, and height of a region in an image.
+        '''
         # Return x, y, w, h of a specified region
         r = config.REGIONS[region]
         height, width = img.shape[:2]
@@ -53,6 +66,7 @@ class ImageReader(easyocr.Reader):
         Returns:
             An image that has been put in grayscale, resized, and thresholded
         '''
+        
         return
 
         

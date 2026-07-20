@@ -3,6 +3,7 @@ import cv2
 import discord
 import os
 import numpy as np
+import sqlite3
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
@@ -55,7 +56,7 @@ class EditCog(commands.Cog):
             return
 
         for attachment in attachment_list:
-            if attachment.content_type != 'image/webp':
+            if not attachment.content_type.startswith('image'):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
 
@@ -70,3 +71,11 @@ class EditCog(commands.Cog):
             await ctx.send(img_text)
 
         os.remove(config.IMG_NAME)
+        return
+
+
+    @commands.command()
+    async def insert_db(self, ctx):
+        conn = sqlite3.connect('test_database.db')
+        cur = conn.cursor()
+        cur.execute('CREATE TABLE IF NOT EXISTS test_table.')

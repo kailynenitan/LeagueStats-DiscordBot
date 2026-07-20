@@ -1,4 +1,5 @@
 import cv2
+import discord
 import easyocr
 import numpy as np
 import os
@@ -13,13 +14,11 @@ load_dotenv()
 A class for the OCR (easyocr) to be used with the cogs.
 '''
 class ImageReader(easyocr.Reader):
+
     def __init__(self):
         use_gpu_str = os.getenv("USE_GPU", "false").lower()
         use_gpu = use_gpu_str in ("true", "t", "yes", "y", "1")
         super().__init__(['en'], gpu=use_gpu)
-
-        self.image_str = 'stats.jpg'
-        self.image_path = os.path.join(os.getcwd(), self.image_str)
 
     def __get_region_coord(self, img, region):
         '''
@@ -67,7 +66,14 @@ class ImageReader(easyocr.Reader):
             An image that has been put in grayscale, resized, and thresholded
         '''
         
-        return
+        if not os.path.exists(config.IMG_NAME):
+            return None
+        
+        img = cv2.imread(config.IMG_NAME)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+        processed = cv2.bitwise_not(resized)
+        return processed
 
         
     def read_region(self, img, arg):

@@ -1,5 +1,4 @@
 import asyncio
-import cv2
 import discord
 import os
 import numpy as np
@@ -10,30 +9,7 @@ from discord.ext import commands
 import config
 import reader
 
-    
-    
-# WIP
-def get_stats(arg):    
-    if not os.path.exists(config.IMG_PATH):
-        return None
 
-    # Create a resized image with black text on a white background
-    img = cv2.imread(config.IMG_NAME)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    processed = cv2.bitwise_not(resized)
-    
-    text_reader = reader.ImageReader()
-    result = text_reader.read_region(processed, arg)
-    
-    text = ''
-    for r in result:
-        text = text + r + '\n'
-    
-    return text
-
-
-# WIP
 class EditCog(commands.Cog):
     '''
     Holds commands that will edit the information in SQL database
@@ -60,12 +36,14 @@ class EditCog(commands.Cog):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
 
+        # Save and edit an image to make it easier for the OCR to read the text
         await attachment_list[0].save(config.IMG_PATH)
+        text_reader = reader.ImageReader()
+        processed = text_reader.process_image()
         
-        loop = asyncio.get_running_loop()
-        img_text = await loop.run_in_executor(self.bot.executor, get_stats, arg)
-
-        if img_text == '':
+        img_text = text_reader.read_region(processed, arg)
+    
+        if len(img_text) == 0:
             await ctx.send('No text read')
         else:
             await ctx.send(img_text)

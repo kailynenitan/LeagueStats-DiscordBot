@@ -40,16 +40,40 @@ class StatsBot(commands.Bot):
         print(f'Logged in as {self.user}')
 
     async def on_ready(self):
+        # Create directory and database files
         db_folder = Path('data')
         db_file = db_folder / 'league_stats.db'
         db_folder.mkdir(parents=True, exist_ok=True)
 
+        # Create tables in database
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS game_player_table (
+                gameID INTEGER,
+                playerID INTEGER,
+                kills INTEGER NOT NULL,
+                deaths INTEGER NOT NULL,
+                assists INTEGER NOT NULL,
+                cs INTEGER NOT NULL,
+                gold INTEGER NOT NULL,
+                result INTEGER NOT NULL,
+                PRIMARY KEY(gameID, playerID)
+        );""")
+        
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS game_table (
+                gameID INTEGER PRIMARY KEY,
+                timestamp TEXT,
+                mvp INTEGER,
+                ace INTEGER
+        );""")
+        
         conn.execute("""
             CREATE TABLE IF NOT EXISTS player_table (
                 playerID INTEGER PRIMARY KEY,
-                league_username TEXT,
+                league_username TEXT NOT NULL UNIQUE,
                 discord_username TEXT,
                 alt_name TEXT
         );""")

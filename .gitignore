@@ -4,6 +4,10 @@
 # Ignore directories
 __pycache__
 
+# Ignore database file
+/data/
+.db
+
 # Ignore picture files
 .jpg
 .jpeg

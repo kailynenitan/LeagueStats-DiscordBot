@@ -1,9 +1,11 @@
 import asyncio
 import discord
 import os
+import sqlite3
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 from dotenv import load_dotenv
+from pathlib import Path
 
 import config
 import edit_cog
@@ -27,15 +29,35 @@ class StatsBot(commands.Bot):
         super().__init__(command_prefix='$', intents=intents)
         self.executor = ProcessPoolExecutor()
 
-    async def setup_hook(self):
-        await self.add_cog(get_cog.GetCog(self))
-        await self.add_cog(edit_cog.EditCog(self))
-        # await self.add_cog(test_cog.TestCog(self))
-        print(f'Logged in as {self.user}')
-    
     async def close(self):
         self.executor.shutdown()
         await super().close()
+    
+    async def setup_hook(self):
+        await self.add_cog(get_cog.GetCog(self))
+        await self.add_cog(edit_cog.EditCog(self))
+
+        print(f'Logged in as {self.user}')
+
+    async def on_ready(self):
+        db_folder = Path('data')
+        db_file = db_folder / 'league_stats.db'
+        db_folder.mkdir(parents=True, exist_ok=True)
+
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS player_table (
+                playerID INTEGER PRIMARY KEY,
+                league_username TEXT,
+                discord_username TEXT,
+                alt_name TEXT
+        );""")
+
+        conn.commit()
+        conn.close()
+        print(f'Database initialized at: {db_file.resolve()}')
+        
 
 
 

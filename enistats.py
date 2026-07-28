@@ -64,15 +64,15 @@ class StatsBot(commands.Bot):
         
         conn.execute("""
             CREATE TABLE IF NOT EXISTS game_table (
-                gameID INTEGER PRIMARY KEY,
-                timestamp TEXT,
+                gameID INTEGER PRIMARY KEY AUTO_INCREMENT,
+                timestamp TEXT NOT NULL,
                 mvp INTEGER,
                 ace INTEGER
         );""")
         
         conn.execute("""
             CREATE TABLE IF NOT EXISTS player_table (
-                playerID INTEGER PRIMARY KEY,
+                playerID INTEGER PRIMARY KEY AUTO_INCREMENT,
                 league_username TEXT NOT NULL UNIQUE,
                 discord_username TEXT,
                 alt_name TEXT

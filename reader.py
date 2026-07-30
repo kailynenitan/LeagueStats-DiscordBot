@@ -15,12 +15,23 @@ A class for the OCR (easyocr) to be used with the cogs.
 '''
 class ImageReader(easyocr.Reader):
 
-    def __init__(self):
+    def __init__(self, image_bytes: bytes):
         use_gpu_str = os.getenv("USE_GPU", "false").lower()
         use_gpu = use_gpu_str in ("true", "t", "yes", "y", "1")
         super().__init__(['en'], gpu=use_gpu)
 
-    def __get_region_coord(self, img, region):
+        # Save image as np array
+        np_arr = np.frombuffer(image_bytes, np.uint8)
+        self.image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        if (self.image is None):
+            raise ValueError('Failed to decode image.')
+
+        # Preprocess image
+        gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+        self.image = cv2.bitwise_not(resized)
+
+    def __get_region_coord(self, img, region) -> int, int, int, int:
         '''
         Get the (x,y) coordinates, width, and height of an area of an image to get specific stats.
 
@@ -31,7 +42,6 @@ class ImageReader(easyocr.Reader):
         Returns:
             Four integers of the x-coordinate, y-coordinate, width, and height of a region in an image.
         '''
-        # Return x, y, w, h of a specified region
         r = config.REGIONS[region]
         height, width = img.shape[:2]
         x = int(r[0] * width)
@@ -42,7 +52,7 @@ class ImageReader(easyocr.Reader):
 
     def __mask_region(self, img, region) -> None:
         '''
-        Cover an area of an image with a rectangle mask
+        Cover an area of an image with a rectangle mask. This alters the input image itself.
 
         Args:
             img: The image to lay a mask over
@@ -55,28 +65,21 @@ class ImageReader(easyocr.Reader):
         cv2.rectangle(img, topleft, botright, (255, 255, 255), -1)
         return
 
-    def process_image(self):
-        '''
-        Edit an image to prepare for an OCR to read it.
-
-        Args:
-            img: The image to be processed
+    '''
+    def get_game_results(self):
+        
+        Get two sets representing a winning and a losing team.
 
         Returns:
-            An image that has been put in grayscale, resized, and thresholded
-        '''
+            Two sets of strings. The first set are the names of the winners and the second are the losers.
         
-        if not os.path.exists(config.IMG_NAME):
-            return None
         
-        img = cv2.imread(config.IMG_NAME)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-        processed = cv2.bitwise_not(resized)
-        return processed
+        
+        return win_set, lose_set
+    '''
 
         
-    def read_region(self, img, arg):
+    def read_region(self, arg):
         '''
         Read the text in a specified region of an image
         
@@ -87,12 +90,11 @@ class ImageReader(easyocr.Reader):
         Returns:
             A list of strings of text found in the region specified
         '''
-
-        x, y, w, h = self.__get_region_coord(img, arg)
-        crop = img[y:y + h, x:x + w]
-        crop_height, crop_width = crop.shape[:2]
         
         # Mask item icons and forward slashes to make the cropped image easier to read
+        x, y, w, h = self.__get_region_coord(self.image, arg)
+        crop = self.image[y:y + h, x:x + w]
+        crop_height, crop_width = crop.shape[:2]
         self.__mask_region(crop, 'mask_items')
         self.__mask_region(crop, 'mask_slash1')
         self.__mask_region(crop, 'mask_slash2')
@@ -104,13 +106,10 @@ class ImageReader(easyocr.Reader):
             cv2.BORDER_CONSTANT, 
             value=[255, 255, 255]
         )
-        
-        # Show image crop
-        '''
-        cv2.imshow(arg, crop)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        '''
+
+        # cv2.imshow(arg, crop)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         
         return self.readtext(
             crop,

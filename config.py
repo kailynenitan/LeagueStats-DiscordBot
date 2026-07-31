@@ -10,10 +10,10 @@ DB_FILE = 'league_stats.db'
 # Areas of stats proportional to match history screenshot crops in pixels
 # The format of each tuple is (x-coord, y-coord, width, height)
 REGIONS = {
-    # Areas to cover with black rectangles
-    'mask_items':   (0.24000, 0.00000, 0.34000, 1.0000),
-    'mask_slash1':  (0.63568, 0.00000, 0.02300, 1.0000),
-    'mask_slash2':  (0.69389, 0.00000, 0.02300, 1.0000),
+    # Areas to cover with a mask
+    'mask_items':   (0.24000, 0.00000, 0.34000, 1.00000),
+    'mask_slash1':  (0.63568, 0.00000, 0.02300, 1.00000),
+    'mask_slash2':  (0.69389, 0.00000, 0.02300, 1.00000),
     
 
     # Stats

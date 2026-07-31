@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 import config
-import edit_cog
-import get_cog
-import test_cog
+import leaderboard_cog
+import profile_cog
+import stats_cog
 
     
 # WIP
@@ -34,8 +34,9 @@ class StatsBot(commands.Bot):
         await super().close()
     
     async def setup_hook(self):
-        await self.add_cog(get_cog.GetCog(self))
-        await self.add_cog(edit_cog.EditCog(self))
+        await self.add_cog(leaderboard_cog.LeaderboardCog(self))
+        await self.add_cog(profile_cog.ProfileCog(self))
+        await self.add_cog(stats_cog.StatsCog(self))
 
         print(f'Logged in as {self.user}')
 
@@ -87,8 +88,6 @@ class StatsBot(commands.Bot):
             print(f'Database init failed: {e}')
         finally:
             conn.close()
-        
-        
 
 
 

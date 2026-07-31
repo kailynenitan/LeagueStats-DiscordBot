@@ -11,7 +11,7 @@ import config
 import reader
 
 
-class EditCog(commands.Cog):
+class StatsCog(commands.Cog):
     '''
     Holds commands that will edit the information in SQL database
     '''

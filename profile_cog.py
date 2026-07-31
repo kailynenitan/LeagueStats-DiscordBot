@@ -6,7 +6,7 @@ from pathlib import Path
 import config
 
 # WIP
-class GetCog(commands.Cog):
+class ProfileCog(commands.Cog):
     '''  
     Holds commands to fetch information from SQL database
     '''
@@ -40,3 +40,9 @@ class GetCog(commands.Cog):
             conn.close()
 
         return
+
+    @commands.command(name='show_all')
+    async def get_all(self, ctx, arg):
+        '''
+        Show all columns 
+        '''

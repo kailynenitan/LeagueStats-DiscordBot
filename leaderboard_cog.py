@@ -6,7 +6,7 @@ from discord.ext import commands
 The commands in this cog are used to test commands and features of other cogs.
 All commands in this cog are experimental and not meant for regular bot use.
 '''
-class TestCog(commands.Cog):
+class LeaderboardCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

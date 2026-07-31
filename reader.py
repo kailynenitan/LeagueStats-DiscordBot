@@ -25,13 +25,14 @@ class ImageReader(easyocr.Reader):
         self.image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         if (self.image is None):
             raise ValueError('Failed to decode image.')
-
+        
         # Preprocess image
         gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         self.image = cv2.bitwise_not(resized)
 
-    def __get_region_coord(self, img, region) -> int, int, int, int:
+
+    def __get_region_coord(self, img, region) -> [int, int, int, int]:
         '''
         Get the (x,y) coordinates, width, and height of an area of an image to get specific stats.
 
@@ -50,6 +51,7 @@ class ImageReader(easyocr.Reader):
         h = int(r[3] * height)
         return x, y, w, h
 
+
     def __mask_region(self, img, region) -> None:
         '''
         Cover an area of an image with a rectangle mask. This alters the input image itself.
@@ -64,19 +66,6 @@ class ImageReader(easyocr.Reader):
         botright = (x + w, y + h)
         cv2.rectangle(img, topleft, botright, (255, 255, 255), -1)
         return
-
-    '''
-    def get_game_results(self):
-        
-        Get two sets representing a winning and a losing team.
-
-        Returns:
-            Two sets of strings. The first set are the names of the winners and the second are the losers.
-        
-        
-        
-        return win_set, lose_set
-    '''
 
         
     def read_region(self, arg):
@@ -106,10 +95,6 @@ class ImageReader(easyocr.Reader):
             cv2.BORDER_CONSTANT, 
             value=[255, 255, 255]
         )
-
-        # cv2.imshow(arg, crop)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         
         return self.readtext(
             crop,

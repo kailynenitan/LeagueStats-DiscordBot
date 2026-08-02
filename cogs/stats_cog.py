@@ -8,8 +8,7 @@ from discord.ext import commands
 from pathlib import Path
 
 import config
-import reader
-
+from cogs.reader import ImageReader
 
 class StatsCog(commands.Cog):
     """
@@ -40,7 +39,7 @@ class StatsCog(commands.Cog):
                 return
         
         image_bytes = await attachment_list[0].read()
-        text_reader = reader.ImageReader(image_bytes)
+        text_reader = ImageReader(image_bytes)
 
         text = text_reader.read_region('p1')
         for stat in text:

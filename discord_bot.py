@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 import config
-import leaderboard_cog
-import profile_cog
-import stats_cog
+from cogs.leaderboard_cog import LeaderboardCog
+from cogs.profile_cog import ProfileCog
+from cogs.stats_cog import StatsCog
 
-    
+
 # WIP
 class StatsBot(commands.Bot):
     '''
@@ -34,9 +34,9 @@ class StatsBot(commands.Bot):
         await super().close()
     
     async def setup_hook(self):
-        await self.add_cog(leaderboard_cog.LeaderboardCog(self))
-        await self.add_cog(profile_cog.ProfileCog(self))
-        await self.add_cog(stats_cog.StatsCog(self))
+        await self.add_cog(LeaderboardCog(self))
+        await self.add_cog(ProfileCog(self))
+        await self.add_cog(StatsCog(self))
 
         print(f'Logged in as {self.user}')
 
@@ -57,7 +57,9 @@ class StatsBot(commands.Bot):
                     gameID INTEGER PRIMARY KEY,
                     timestamp TEXT NOT NULL,
                     mvp INTEGER,
-                    ace INTEGER
+                    ace INTEGER,
+                    FOREIGN KEY(mvp) REFERENCES player_table(playerID),
+                    FOREIGN KEY(ace) REFERENCES player_table(playerID)
             );""")
             
             conn.execute("""
@@ -65,7 +67,7 @@ class StatsBot(commands.Bot):
                     playerID INTEGER PRIMARY KEY,
                     league_username TEXT NOT NULL UNIQUE,
                     discord_username TEXT,
-                    alt_name TEXT
+                    nickname TEXT
             );""")
             
             conn.execute("""

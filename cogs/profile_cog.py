@@ -15,28 +15,34 @@ class ProfileCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='add_player')
-    async def insert_player(self, league_username, discord_username=None, name=None):
+    async def insert_player(self, league_username, discord_username=None, nickname=None):
         db_folder = Path(config.DB_FOLDER)
         db_file = db_folder / config.DB_FILE
         
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
         try:
-            # Add a new player to the database
-            sql_statement = (f'INSERT INTO player_table'
-                             f'VALUES {league_username}')
-            conn.execute(sql_statement)
+            sql_statement = (
+                    'INSERT INTO player_table (league_username)'
+                    'VALUES (?);',
+                    (league_username,)
+            )
 
             if (discord_username is not None):
-                sql_statement = (f'UPDATE player_table'
-                                 f'SET discord_username={discord_username}')
-                conn.execute(sql_statement)
+                sql_statement = (
+                    'INSERT INTO player_table (league_username, discord_username);'
+                    'VALUES (?, ?);',
+                    (league_username, discord_username)
+                )
 
             if (name is not None):
-                sql_statement = (f'UPDATE player_table'
-                                 f'SET alt_name={name}')
-                conn.execute(sql_statement
-                             )
+                sql_statement = (
+                    'INSERT INTO player_table (league_username, discord_username, nickname);'
+                    'VALUES (?, ?, ?);',
+                    (league_username, discord_username, nickname)
+                )
+           
+            conn.execute(sql_statement)
             conn.commit()
         except sqlite3.Error as e:
             print(f'Database insert failed: {e}')

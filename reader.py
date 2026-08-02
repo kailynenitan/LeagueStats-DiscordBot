@@ -80,6 +80,10 @@ class ImageReader(easyocr.Reader):
             A list of strings of text found in the region specified
         '''
         
+        if (arg.startswith('p') == False):
+            print('invalid argument')
+            return
+
         # Mask item icons and forward slashes to make the cropped image easier to read
         x, y, w, h = self.__get_region_coord(self.image, arg)
         crop = self.image[y:y + h, x:x + w]

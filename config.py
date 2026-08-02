@@ -1,9 +1,5 @@
 import os
 
-
-IMG_NAME = 'stats.jpg'
-IMG_PATH = os.path.join(os.getcwd(), IMG_NAME)
-
 DB_FOLDER = 'data'
 DB_FILE = 'league_stats.db'
 

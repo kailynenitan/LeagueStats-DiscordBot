@@ -1,7 +1,6 @@
 import discord
 import sqlite3
 from discord.ext import commands
-from pathlib import Path
 
 import config
 

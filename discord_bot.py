@@ -28,6 +28,7 @@ class StatsBot(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix='$', intents=intents)
         self.executor = ProcessPoolExecutor()
+        self.db_handler = DatabaseHandler()
 
     async def close(self):
         self.executor.shutdown()
@@ -38,8 +39,10 @@ class StatsBot(commands.Bot):
         await self.add_cog(ProfileCog(self))
         await self.add_cog(StatsCog(self))
 
-        print(f'Logged in as {self.user}')
+        self.db_handler.initialize_db()
 
+        print(f'Logged in as {self.user}')
+'''
     async def on_ready(self):
         # Create directory and database files
         db_folder = Path(config.DB_FOLDER)
@@ -90,7 +93,7 @@ class StatsBot(commands.Bot):
             print(f'Database init failed: {e}')
         finally:
             conn.close()
-
+'''
 
 
 async def main():

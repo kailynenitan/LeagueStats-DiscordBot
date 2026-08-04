@@ -33,7 +33,9 @@ class StatsBot(commands.Bot):
 
     async def close(self):
         self.executor.shutdown()
+        self.db_handler.close()
         await super().close()
+        
     
     async def setup_hook(self):
         await self.add_cog(LeaderboardCog(self))

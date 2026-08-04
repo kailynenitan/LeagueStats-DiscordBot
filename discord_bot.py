@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 import config
-from cogs.databasehandler import Databasehandler
+from databasehandler import Databasehandler
 from cogs.leaderboard_cog import LeaderboardCog
 from cogs.profile_cog import ProfileCog
 from cogs.stats_cog import StatsCog

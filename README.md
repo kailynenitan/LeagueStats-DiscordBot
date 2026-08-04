@@ -9,6 +9,7 @@ This project is a work in progress.
 * Python 3.14
 * asyncio library
 * discord library
+* dotenv library
 * OpenCV library
 * python-dotenv library
 * easyocr library

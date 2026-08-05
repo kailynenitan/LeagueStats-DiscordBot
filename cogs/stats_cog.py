@@ -5,10 +5,9 @@ import numpy as np
 import sqlite3
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
-from pathlib import Path
 
 import config
-from cogs.reader import ImageReader
+from cogs.ocr_handler import ImageReader
 
 class StatsCog(commands.Cog):
     """
@@ -17,9 +16,32 @@ class StatsCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+    
+
+    def __insert_match(
+        self,
+        username: str,
+        kills: int, deaths: int, assists: int,
+        cs: int,
+        gold: int,
+        result: str
+    ):
+        pass
+        '''
+        purpose: insert all data from screenshot
+
+        gameID = new row in game_table
+
+        for every player in screenshot:
+            IF player is not in player_table:
+                add player to player_table
+            
+            make new row in game_player_table
+        '''
+
 
     @commands.command(name='read_image')
-    async def editFromImage(self, ctx):
+    async def insert_screenshot(self, ctx):
         """
         Update the SQL database from a screenshot provided by the user
 

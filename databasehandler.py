@@ -14,17 +14,21 @@ class DatabaseHandler:
         self.conn.close()
 
     def execute_query(self, sql_statement: str, params: tuple=(), fetch_size: int=0):
-        # Execute a sql query on the league_stats database
-        #
-        # Args:
-        #     sql_statement: A string of the sql statement to be executed
-        #     params: A tuple of the dynamic variables to be used
-        #           in sql_statement
-        #     fetch: An int describing how many rows to select and return
-        #           -1 -> fetch all
-        #           0 -> fetch none
-        #           1 -> fetch one
-        #           x -> fetch x number of rows
+        '''
+        Execute a sql query on the league_stats database
+       
+        Args:
+            sql_statement: A string of the sql statement to be executed
+            params: A tuple of the dynamic variables to be used
+                  in sql_statement
+            fetch: An int describing how many rows to select and return
+                  -1 -> fetch all
+                  0 -> fetch none
+                  1 -> fetch one
+                  x -> fetch x number of rows
+        '''
+        if ((not self.cursor) or (not self.conn)):
+            print('[ERR] Query execution failed: Database connection or cursor not intialized.')
 
         rows = None
 
@@ -35,7 +39,7 @@ class DatabaseHandler:
                 rows = self.cursor.fetchall()
             elif (fetch_size == 1):
                 rows = self.cursor.fetchone()
-            elif (fetch_size != 0):
+            elif (fetch_size > 0):
                 rows = self.cursor.fetchmany(fetch_size)
 
             self.conn.commit()
@@ -43,12 +47,13 @@ class DatabaseHandler:
         except sqlite3.Error as e:
             print(f'Query execution failed: {e}')
  
-        finally:
-            print(f'Query execution successful')
+        else:
+            print('Query execution successful')
+            return rows
 
-        return rows
 
-
+    def get_lastrowid(self):
+        return self.cursor.lastrowid
 
     def create_tables(self):
         self.conn = sqlite3.connect(self.DB_FILE)

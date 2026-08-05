@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 import config
-from databasehandler import Databasehandler
+from databasehandler import DatabaseHandler
+from cogs.game_cog import GameCog
 from cogs.leaderboard_cog import LeaderboardCog
 from cogs.profile_cog import ProfileCog
 from cogs.stats_cog import StatsCog
@@ -38,11 +39,12 @@ class StatsBot(commands.Bot):
         
     
     async def setup_hook(self):
+        await self.add_cog(GameCog(self))
         await self.add_cog(LeaderboardCog(self))
         await self.add_cog(ProfileCog(self))
         await self.add_cog(StatsCog(self))
 
-        self.db_handler = Databasehandler()
+        self.db_handler = DatabaseHandler()
         self.db_handler.create_tables()        
 
         print(f'Logged in as {self.user}')

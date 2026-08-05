@@ -1,8 +1,5 @@
 import os
 
-DB_FOLDER = 'data'
-DB_FILE = 'league_stats.db'
-
 # Areas of stats proportional to match history screenshot crops in pixels
 # The format of each tuple is (x-coord, y-coord, width, height)
 REGIONS = {

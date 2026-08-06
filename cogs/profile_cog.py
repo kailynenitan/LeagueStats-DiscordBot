@@ -5,14 +5,14 @@ from discord.ext import commands
 import config
 
 class ProfileCog(commands.Cog):
-    """ 
+    ''' 
     Holds commands to handle individual player data
-    """
+    '''
     
     def __init__(self, bot):
         self.bot = bot
 
-    async def insert_player(self, league_username, discord_username=None, nickname=None) -> int:
+    async def insert_player(self, league_username: str, discord_username: str=None, nickname: str=None) -> int:
         if ((discord_username is not None) and (nickname is not None)):
             sql_statement = (
                 'INSERT INTO player_table (league_username, discord_username, nickname) '
@@ -41,8 +41,9 @@ class ProfileCog(commands.Cog):
             )
             params = (league_username,)
 
-        self.db_handler.execute_query(sql_statement, params)
-        return self.db_handler.get_lastrowid()
+        self.bot.get_cog('DatabaseHandler').execute_query(sql_statement, params)
+#       return self.db_handler.get_lastrowid()
+        return 0
 
 
     @commands.command(name='print_names')

@@ -42,13 +42,13 @@ class StatsCog(commands.Cog):
 
     @commands.command(name='read_image')
     async def insert_screenshot(self, ctx):
-        """
+        '''
         Update the SQL database from a screenshot provided by the user
 
         Args:
             ctx: Text command from the user
             attachment: Screenshot image of entire window of League of Legends game match history
-        """
+        '''
         
         attachment_list = ctx.message.attachments
         if not attachment_list:
@@ -63,24 +63,26 @@ class StatsCog(commands.Cog):
         image_bytes = await attachment_list[0].read()
         text_reader = ImageReader(image_bytes)
         
+        '''
         text = text_reader.read_region('p1')
         for stat in text:
             await ctx.send(stat)
-
         '''
+
         profile = self.bot.get_cog('ProfileCog')
-        if (profile is not None):
-            text = text_reader.read_region('p1')
-            if text:
-                playerID = await profile.insert_player(text[0])
-                await ctx.send(str(playerID))
-            else:
-                await ctx.send('ERR: Could not read text from image')
-        '''
-        return
+        if (profile is None):
+            await ctx.send('ERR: Could not read text from image')
+            return
 
-'''
-        text = text_reader.read_region('p1')
-        for stat in text:
-            await ctx.send(stat)
-'''
+        text = text_reader.read_region('p9')
+        if (text):
+            league_username = text[0]
+            await profile.insert_player(league_username)
+            await ctx.send(f'{league_username} has been added to the database!')
+            '''
+            if playerID is not None:
+                await ctx.send('playerID found')
+            else:
+                await ctx.send('playerID not found')
+            '''
+        return

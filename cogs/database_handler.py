@@ -1,17 +1,20 @@
 import sqlite3
+from discord.ext import commands
 from pathlib import Path
 
-class DatabaseHandler:
-    def __init__(self):
+class DatabaseHandler(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.conn = None
+
         self.DB_FOLDER = Path('data')
         self.DB_FOLDER.mkdir(parents=True, exist_ok=True)
         self.DB_FILE = self.DB_FOLDER / 'league_stats.db'
 
-        self.conn = None
-        self.cursor = None
 
     def close(self):
-        self.conn.close()
+        if (self.conn):
+            self.conn.close()
 
     def execute_query(self, sql_statement: str, params: tuple=(), fetch_size: int=0):
         '''
@@ -27,37 +30,36 @@ class DatabaseHandler:
                   1 -> fetch one
                   x -> fetch x number of rows
         '''
-        if ((not self.cursor) or (not self.conn)):
-            print('[ERR] Query execution failed: Database connection or cursor not intialized.')
-
-        rows = None
+        if (not self.conn):
+            raise ConnectionError('Connection to database failed.')
+            return
 
         try:
-            self.cursor.execute(sql_statement, params)
+            cursor = self.conn.execute(sql_statement, params)
 
+            rows = None
             if (fetch_size == -1):
-                rows = self.cursor.fetchall()
+                rows = cursor.fetchall()
             elif (fetch_size == 1):
-                rows = self.cursor.fetchone()
+                rows = cursor.fetchone()
             elif (fetch_size > 0):
-                rows = self.cursor.fetchmany(fetch_size)
+                rows = cursor.fetchmany(fetch_size)
 
             self.conn.commit()
 
         except sqlite3.Error as e:
-            print(f'Query execution failed: {e}')
- 
+            print(f'[ERR] Query execution failed: {e}')
+            return None
+        except ConnectionError as e:
+            print(f'[ERR] Query execution failed: {e}')
+            return None
+
         else:
             print('Query execution successful')
             return rows
 
-
-    def get_lastrowid(self):
-        return self.cursor.lastrowid
-
     def create_tables(self):
         self.conn = sqlite3.connect(self.DB_FILE)
-        self.cursor = self.conn.cursor()
 
         try:
             self.conn.execute('PRAGMA foreign_keys=ON;')
@@ -96,10 +98,9 @@ class DatabaseHandler:
             );''')
 
             self.conn.commit()
-
-        except sqlite3.Error as e:
-            print(f'Database initialization failed: {e}')
-
-        finally:
             print(f'Database initialized at: {self.DB_FILE.resolve()}')
 
+        except sqlite3.Error as e:
+            print(f'[ERR] Database initialization failed: {e}')
+
+        return

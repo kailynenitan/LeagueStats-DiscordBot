@@ -62,7 +62,7 @@ class StatsCog(commands.Cog):
         
         image_bytes = await attachment_list[0].read()
         text_reader = ImageReader(image_bytes)
-        
+       
         '''
         text = text_reader.read_region('p1')
         for stat in text:
@@ -79,12 +79,17 @@ class StatsCog(commands.Cog):
             await ctx.send('ERR: Could not load game_cog')
             return
 
+        await game_cog.insert_game()
+        for x in range(1, 11):
+            text = text_reader.read_region(f'p{x}')
+            if text:
+                # await ctx.send(text)
+                league_username = text[0]
+                kills = text[1]
+                deaths = text[2]
+                assists = text[3]
+                cs = text[4]
+                gold = text[5]
 
-        text = text_reader.read_region('p3')
-        if (text):
-            league_username = text[0]
-            await game_cog.insert_game()
-            await profile_cog.insert_player(league_username)
-            await ctx.send(f'{league_username} has been added to the database!')
-        
+                await profile_cog.insert_player(league_username)
         return

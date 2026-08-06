@@ -8,7 +8,7 @@ class GameCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def insert_game(self, ctx):
+    async def insert_game(self) -> int:
         sql_statement = (
             'INSERT INTO game_table (timestamp)'
             'VALUES (?);'

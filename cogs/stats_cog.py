@@ -69,20 +69,22 @@ class StatsCog(commands.Cog):
             await ctx.send(stat)
         '''
 
-        profile = self.bot.get_cog('ProfileCog')
-        if (profile is None):
-            await ctx.send('ERR: Could not read text from image')
+        profile_cog = self.bot.get_cog('ProfileCog')
+        if (profile_cog is None):
+            await ctx.send('ERR: Could not load profile_cog')
             return
 
-        text = text_reader.read_region('p9')
+        game_cog = self.bot.get_cog('GameCog')
+        if (game_cog is None):
+            await ctx.send('ERR: Could not load game_cog')
+            return
+
+
+        text = text_reader.read_region('p3')
         if (text):
             league_username = text[0]
-            await profile.insert_player(league_username)
+            await game_cog.insert_game()
+            await profile_cog.insert_player(league_username)
             await ctx.send(f'{league_username} has been added to the database!')
-            '''
-            if playerID is not None:
-                await ctx.send('playerID found')
-            else:
-                await ctx.send('playerID not found')
-            '''
+        
         return

@@ -42,7 +42,6 @@ class ProfileCog(commands.Cog):
             params = (league_username,)
 
         self.bot.get_cog('DatabaseHandler').execute_query(sql_statement, params)
-#       return self.db_handler.get_lastrowid()
         return 0
 
 

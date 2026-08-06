@@ -1,6 +1,6 @@
-import datetime
 import discord
 import sqlite3
+from datetime import datetime
 from discord.ext import commands
 
 
@@ -11,11 +11,11 @@ class GameCog(commands.Cog):
 
     async def insert_game(self):
         sql_statement = (
-            'INSERT INTO game_table (timestamp) '
+            'INSERT OR IGNORE INTO game_table (timestamp) '
             'VALUES (?);'
         )
-        params = (datetime.datetime.now(),)
-        self.bot.get_cog('DatabaseHandler').execute_query(sql_statement, params)
+        params = (datetime.now(),)
+        return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
 
     @commands.command()
     async def select_top_mvp(self, ctx):

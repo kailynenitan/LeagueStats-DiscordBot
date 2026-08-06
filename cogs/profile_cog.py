@@ -15,34 +15,33 @@ class ProfileCog(commands.Cog):
     async def insert_player(self, league_username: str, discord_username: str=None, nickname: str=None) -> int:
         if ((discord_username is not None) and (nickname is not None)):
             sql_statement = (
-                'INSERT INTO player_table (league_username, discord_username, nickname) '
+                'INSERT OR IGNORE INTO player_table (league_username, discord_username, nickname) '
                 'VALUES (?, ?, ?);'
             )
             params = (league_username, discord_username, nickname)
 
         elif (discord_username is not None):
             sql_statement = (
-                'INSERT INTO player_table (league_username, discord_username) '
+                'INSERT OR IGNORE INTO player_table (league_username, discord_username) '
                 'VALUES (?, ?);'
             )
             params = (league_username, discord_username)
 
         elif (nickname is not None):
             sql_statement = (
-                'INSERT INTO player_table (league_username, nickname) '
+                'INSERT OR IGNORE INTO player_table (league_username, nickname) '
                 'VALUES (?, ?);'
             )
             params = (league_username, nickname)
 
         else:
             sql_statement = (
-                'INSERT INTO player_table (league_username) '
+                'INSERT OR IGNORE INTO player_table (league_username) '
                 'VALUES (?);'
             )
             params = (league_username,)
 
-        self.bot.get_cog('DatabaseHandler').execute_query(sql_statement, params)
-        return 0
+        return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
 
 
     @commands.command(name='print_names')

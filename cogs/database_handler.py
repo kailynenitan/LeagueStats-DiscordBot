@@ -7,7 +7,7 @@ class DatabaseHandler(commands.Cog):
         self.bot = bot
         self.conn = None
 
-        self.DB_FOLDER = Path('data')
+        self.DB_FOLDER = Path('../data')
         self.DB_FOLDER.mkdir(parents=True, exist_ok=True)
         self.DB_FILE = self.DB_FOLDER / 'league_stats.db'
 
@@ -16,9 +16,9 @@ class DatabaseHandler(commands.Cog):
         if (self.conn):
             self.conn.close()
 
-    def execute_query(self, sql_statement: str, params: tuple=(), fetch_size: int=0):
+    def execute_select(self, sql_statement: str, params: tuple=(), fetch_size: int=0):
         '''
-        Execute a sql query on the league_stats database
+        Execute a sql select query on the league_stats database
        
         Args:
             sql_statement: A string of the sql statement to be executed
@@ -29,13 +29,17 @@ class DatabaseHandler(commands.Cog):
                   0 -> fetch none
                   1 -> fetch one
                   x -> fetch x number of rows
+
+        Returns:
+            tuple or list of tuples representing the rows returned from select
         '''
         if (not self.conn):
             raise ConnectionError('Connection to database failed.')
             return
 
         try:
-            cursor = self.conn.execute(sql_statement, params)
+            cursor = self.conn.cursor()
+            cursor.execute(sql_statement, params)
 
             rows = None
             if (fetch_size == -1):
@@ -44,19 +48,46 @@ class DatabaseHandler(commands.Cog):
                 rows = cursor.fetchone()
             elif (fetch_size > 0):
                 rows = cursor.fetchmany(fetch_size)
-
+            
             self.conn.commit()
+            return rows
 
         except sqlite3.Error as e:
-            print(f'[ERR] Query execution failed: {e}')
+            print(f'[ERR] SQLite3: {e}')
             return None
         except ConnectionError as e:
-            print(f'[ERR] Query execution failed: {e}')
+            print(f'[ERR] Connection: {e}')
             return None
 
-        else:
-            print('Query execution successful')
-            return rows
+    def execute_insert(self, sql_statement: str, params: tuple=()) -> int:
+        '''
+        Execute a sql insert query on the league_stats database
+       
+        Args:
+            sql_statement: sql insert query in str
+            params: Tuple of the dynamic variables used in sql_statement
+                
+        Returns:
+            int rowid: A unique int id of the row inserted into the database
+        '''
+
+        if (not self.conn):
+            raise ConnectionError('Connection to database failed.')
+            return
+
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(sql_statement, params)
+            self.conn.commit()
+            return cursor.lastrowid
+
+        except sqlite3.Error as e:
+            print(f'[ERR] SQLite3: {e}')
+            return None
+        except ConnectionError as e:
+            print(f'[ERR] Connection: {e}')
+            return None
+
 
     def create_tables(self):
         self.conn = sqlite3.connect(self.DB_FILE)

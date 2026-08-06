@@ -18,7 +18,7 @@ class StatsCog(commands.Cog):
         self.bot = bot
     
 
-    def __insert_match(
+    def insert_match(
         self,
         username: str,
         kills: int, deaths: int, assists: int,
@@ -62,9 +62,25 @@ class StatsCog(commands.Cog):
         
         image_bytes = await attachment_list[0].read()
         text_reader = ImageReader(image_bytes)
-
+        
         text = text_reader.read_region('p1')
         for stat in text:
             await ctx.send(stat)
 
+        '''
+        profile = self.bot.get_cog('ProfileCog')
+        if (profile is not None):
+            text = text_reader.read_region('p1')
+            if text:
+                playerID = await profile.insert_player(text[0])
+                await ctx.send(str(playerID))
+            else:
+                await ctx.send('ERR: Could not read text from image')
+        '''
         return
+
+'''
+        text = text_reader.read_region('p1')
+        for stat in text:
+            await ctx.send(stat)
+'''

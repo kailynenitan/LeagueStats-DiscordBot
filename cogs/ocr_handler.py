@@ -4,11 +4,10 @@ import easyocr
 import numpy as np
 import os
 import string
+import torch
 from dotenv import load_dotenv
 
 import config
-
-load_dotenv()
 
 
 '''
@@ -17,9 +16,8 @@ A class for the OCR (easyocr) to be used with the cogs.
 class ImageReader(easyocr.Reader):
 
     def __init__(self, image_bytes: bytes):
-        use_gpu_str = os.getenv("USE_GPU", "false").lower()
-        use_gpu = use_gpu_str in ("true", "t", "yes", "y", "1")
-        super().__init__(['en'], gpu=use_gpu)
+        has_gpu = torch.cuda.is_available()
+        super().__init__(['en'], gpu=has_gpu)
 
         # Save image as np array
         np_arr = np.frombuffer(image_bytes, np.uint8)
@@ -100,7 +98,7 @@ class ImageReader(easyocr.Reader):
             cv2.BORDER_CONSTANT, 
             value=[255, 255, 255]
         )
-        
+
         return self.readtext(
             crop,
             detail=0,

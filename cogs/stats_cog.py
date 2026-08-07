@@ -60,15 +60,6 @@ class StatsCog(commands.Cog):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
         
-        image_bytes = await attachment_list[0].read()
-        text_reader = ImageReader(image_bytes)
-       
-        '''
-        text = text_reader.read_region('p1')
-        for stat in text:
-            await ctx.send(stat)
-        '''
-
         profile_cog = self.bot.get_cog('ProfileCog')
         if (profile_cog is None):
             await ctx.send('ERR: Could not load profile_cog')
@@ -79,17 +70,41 @@ class StatsCog(commands.Cog):
             await ctx.send('ERR: Could not load game_cog')
             return
 
-        await game_cog.insert_game()
-        for x in range(1, 11):
-            text = text_reader.read_region(f'p{x}')
-            if text:
-                # await ctx.send(text)
-                league_username = text[0]
-                kills = text[1]
-                deaths = text[2]
-                assists = text[3]
-                cs = text[4]
-                gold = text[5]
+        # Read bytes from screenshot so ImageReader can interact
+        # with the photo wihtout an open connection to the image.
+        image_bytes = await attachment_list[0].read()
+        img_reader = ImageReader(image_bytes)
 
-                await profile_cog.insert_player(league_username)
+        gameID = await game_cog.insert_game()
+        game_result = img_reader.read_region('game_result')[0].lower()
+        if ((game_result == 'victory') or (game_result.startswith('v'))):
+            game_result = 'win'
+        else:
+            game_result = 'loss'
+
+        # Insert stats for each player into game_player_table
+        for player_num in range(1, 11):
+            stats = img_reader.read_region(f'p{player_num}')
+            if (not stats):
+                continue
+
+            league_username = stats[0]
+            kills = stats[1]
+            deaths = stats[2]
+            assists = stats[3]
+            cs = stats[4]
+            gold = stats[5]
+            player_result = game_result
+            
+            # The value of game_result corresponds to the status of the players
+            # shown in the team listed in the top half of the screenshot.
+            if (player_num > 5):
+                player_result = 'loss' if game_result == 'win' else 'win'
+
+            await profile_cog.insert_player(league_username)
+            player_profile = await profile_cog.select_player(league_username=league_username)
+            if player_profile is not None:
+                playerID = player_profile[0]
+
+                await ctx.send(f'{league_username}\'s playerID: {playerID}')
         return

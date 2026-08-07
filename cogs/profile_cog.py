@@ -43,25 +43,35 @@ class ProfileCog(commands.Cog):
 
         return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
 
+    async def select_player(
+        self,
+        league_username: str=None,
+        discord_username:str=None,
+        nickname: str=None
+    ) -> int:
+        if not any([league_username, discord_username, nickname]):
+            raise ValueError('Must enter at least one: league_username, discord_username, nickname')
+            return -1
 
-    @commands.command(name='print_names')
-    async def select_all_names(self, ctx, arg):
-        # Print all names associated with a player
-        
-        sql_statement = (
-            'SELECT * FROM player_table WHERE league_username = ?;'
-        )
-        params = (arg,)
+        if (league_username):
+            sql_statement = (
+                'SELECT * FROM player_table '
+                'WHERE league_username = ?;'
+            )
+            params = (league_username,)
 
-        row = self.db_handler.execute_query(sql_statement, params, 1)
-        if (row is None):
-            await ctx.send('ERR: No player is associated with this name')
-            return
+        elif (discord_username):
+            sql_statement = (
+                'SELECT * FROM player_table '
+                'WHERE discord_username = ?;'
+            )
+            params = (discord_username,)
 
-        await ctx.send(f'All names associated with {arg}:\n')
-        await ctx.send(
-            f'League username: {row[0]}\n'
-            f'Discord username: {row[1]}\n'
-            f'Nickname: {row[2]}'
-        )
-        return
+        else:
+            sql_statement = (
+                'SELECT * FROM player_table '
+                'WHERE nickname = ?;'
+            )
+            params = (nickname,)
+
+        return self.bot.get_cog('DatabaseHandler').execute_select(sql_statement, params, 1)

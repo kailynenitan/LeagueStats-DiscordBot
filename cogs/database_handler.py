@@ -7,7 +7,8 @@ class DatabaseHandler(commands.Cog):
         self.bot = bot
         self.conn = None
 
-        self.DB_FOLDER = Path('../data')
+        bot_dir = Path(__file__).resolve().parent.parent
+        self.DB_FOLDER = Path(bot_dir / 'data')
         self.DB_FOLDER.mkdir(parents=True, exist_ok=True)
         self.DB_FILE = self.DB_FOLDER / 'league_stats.db'
 

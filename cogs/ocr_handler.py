@@ -79,17 +79,20 @@ class ImageReader(easyocr.Reader):
             A list of strings of text found in the region specified
         '''
         
-        if (arg.startswith('p') == False):
-            print('invalid argument')
+        if ((arg != 'game_result') and (arg.startswith('p') == False)):
+            print('[ERR] OCR: Invalid region argument.')
             return
 
+        
         # Mask item icons and forward slashes to make the cropped image easier to read
         x, y, w, h = self.__get_region_coord(self.image, arg)
         crop = self.image[y:y + h, x:x + w]
         crop_height, crop_width = crop.shape[:2]
-        self.__mask_region(crop, 'mask_items')
-        self.__mask_region(crop, 'mask_slash1')
-        self.__mask_region(crop, 'mask_slash2')
+
+        if (arg.startswith('p')):
+            self.__mask_region(crop, 'mask_items')
+            self.__mask_region(crop, 'mask_slash1')
+            self.__mask_region(crop, 'mask_slash2')
 
         # Frame the image with a white border to make it easier for the OCR to read text
         crop = cv2.copyMakeBorder(

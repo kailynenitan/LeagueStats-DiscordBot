@@ -49,28 +49,25 @@ class ProfileCog(commands.Cog):
         discord_username:str=None,
         nickname: str=None
     ) -> int:
-        if not any([league_username, discord_username, nickname]):
+        if not any(v for v in [league_username, discord_username, nickname] if v and v.strip()):
             raise ValueError('Must enter at least one: league_username, discord_username, nickname')
-            return -1
+            return None
 
-        if (league_username):
+        if (league_username and league_username.strip()):
             sql_statement = (
-                'SELECT * FROM player_table '
-                'WHERE league_username = ?;'
+                'SELECT * FROM player_table WHERE league_username = ?;'
             )
             params = (league_username,)
 
         elif (discord_username):
             sql_statement = (
-                'SELECT * FROM player_table '
-                'WHERE discord_username = ?;'
+                'SELECT * FROM player_table WHERE discord_username = ?;'
             )
             params = (discord_username,)
 
         else:
             sql_statement = (
-                'SELECT * FROM player_table '
-                'WHERE nickname = ?;'
+                'SELECT * FROM player_table WHERE nickname = ?;'
             )
             params = (nickname,)
 

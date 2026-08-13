@@ -59,12 +59,13 @@ class StatsCog(commands.Cog):
             if not attachment.content_type.startswith('image'):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
-        '''
+
         profile_cog = self.bot.get_cog('ProfileCog')
         if (profile_cog is None):
             await ctx.send('ERR: Could not load profile_cog')
             return
 
+        '''
         game_cog = self.bot.get_cog('GameCog')
         if (game_cog is None):
             await ctx.send('ERR: Could not load game_cog')
@@ -83,6 +84,7 @@ class StatsCog(commands.Cog):
             game_result = 'loss'
 
         # gameID = await game_cog.insert_game()
+        # await ctx.send(str(gameID))
 
         # Insert stats for each player into game_player_table
         for player_num in range(1, 11):
@@ -104,5 +106,7 @@ class StatsCog(commands.Cog):
             league_username = stats[0]
             kills, deaths, assists, cs, gold = stats[1:6]
 
-            await ctx.send(f'{player_result}! {league_username} {kills}/{deaths}/{assists} cs:{cs} gold:{gold}')
+            player_rowID = await profile_cog.insert_player(league_username)
+            playerID = (await profile_cog.select_player(league_username=league_username))[0]
+            
         return

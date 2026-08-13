@@ -59,7 +59,7 @@ class StatsCog(commands.Cog):
             if not attachment.content_type.startswith('image'):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
-        
+        '''
         profile_cog = self.bot.get_cog('ProfileCog')
         if (profile_cog is None):
             await ctx.send('ERR: Could not load profile_cog')
@@ -69,19 +69,20 @@ class StatsCog(commands.Cog):
         if (game_cog is None):
             await ctx.send('ERR: Could not load game_cog')
             return
+        '''
 
         # Read bytes from screenshot so ImageReader can interact
         # with the photo wihtout an open connection to the image.
         image_bytes = await attachment_list[0].read()
         img_reader = ImageReader(image_bytes)
 
-        game_result = (await asyncio.to_thread(img_reader.read_region('game_result')))[0].lower()
+        game_result = img_reader.read_region('game_result')[0].lower()
         if ((game_result == 'victory') or (game_result.startswith('v'))):
             game_result = 'win'
         else:
             game_result = 'loss'
 
-        gameID = await game_cog.insert_game()
+        # gameID = await game_cog.insert_game()
 
         # Insert stats for each player into game_player_table
         for player_num in range(1, 11):
@@ -91,20 +92,17 @@ class StatsCog(commands.Cog):
             # players in the bottom half must be the opposite game_result
             player_result = game_result if player_num <= 5 else ('loss' if game_result == 'win' else 'win')
 
-            stats = await asyncio.to_thread(img_reader.read_region, f'p{player_num}')
+            stats = img_reader.read_region(f'p{player_num}')
+            if (not stats):
+                await ctx.send('ERR: Unable to read stats')
+                continue
+            '''
             if ((not stats) or (not stats[0]) or (not stats[0].strip())):
                 continue
+            '''
 
-            league_username = stats[0].strip()
+            league_username = stats[0]
             kills, deaths, assists, cs, gold = stats[1:6]
 
-            await profile_cog.insert_player(league_username)
-
-            player_profile = await profile_cog.select_player(league_username=league_username)
-            if player_profile is not None:
-                await ctx.send(f'{league_username}')
-                '''
-                playerID = player_profile[0]
-                await ctx.send(f'{league_username}\'s playerID: {playerID}')
-                '''
+            await ctx.send(f'{player_result}! {league_username} {kills}/{deaths}/{assists} cs:{cs} gold:{gold}')
         return

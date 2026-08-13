@@ -60,7 +60,7 @@ class DatabaseHandler(commands.Cog):
             print(f'[ERR] Connection: {e}')
             return None
 
-    def execute_insert(self, sql_statement: str, params: tuple=()) -> int:
+    def execute_insert(self, sql_statement: str, params: tuple=()):
         '''
         Execute a sql insert query on the league_stats database
        
@@ -69,7 +69,7 @@ class DatabaseHandler(commands.Cog):
             params: Tuple of the dynamic variables used in sql_statement
                 
         Returns:
-            int rowid: A unique int id of the row inserted into the database
+            tuple: A tuple of each value inserted into the table
         '''
 
         if (not self.conn):
@@ -80,7 +80,7 @@ class DatabaseHandler(commands.Cog):
             cursor = self.conn.cursor()
             cursor.execute(sql_statement, params)
             self.conn.commit()
-            return cursor.lastrowid
+            return cursor.fetchone()
 
         except sqlite3.Error as e:
             print(f'[ERR] SQLite3: {e}')

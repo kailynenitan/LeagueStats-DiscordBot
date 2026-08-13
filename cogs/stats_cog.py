@@ -20,10 +20,9 @@ class StatsCog(commands.Cog):
 
     async def _insert_match(
         self,
-        username: str,
+        playerID: int, username: str,
         kills: int, deaths: int, assists: int,
-        cs: int,
-        gold: int,
+        cs: int, gold: int,
         result: str
     ):
         game_cog = self.bot.get_cog('GameCog')
@@ -31,6 +30,18 @@ class StatsCog(commands.Cog):
             await ctx.send('ERR: Could not load game_cog')
             return
         gameID = await game_cog.insert_game()
+
+        sql_statement = (
+            'INSERT INTO game_player_table '
+            'VALUES (?,?,?,?,?,?,?,?);'
+        )
+        params = (playerID, username,
+                  kills, deaths, assists,
+                  cs, gold,
+                  result
+        )
+        self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
+        return
 
         '''
         Insert one player's stats from one game to the game_player_table
@@ -103,6 +114,6 @@ class StatsCog(commands.Cog):
             playerID = (await profile_cog.select_player(league_username=league_username))[0]
             await ctx.send(str(playerID))
 
-            # insert match here
+            await _insert_match(playerID, league_username, int(kills), int(deaths), int(assists), int(cs), int(gold), player_result)
             
         return

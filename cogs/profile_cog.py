@@ -57,18 +57,18 @@ class ProfileCog(commands.Cog):
             sql_statement = (
                 'SELECT * FROM player_table WHERE league_username = ?;'
             )
-            params = (league_username,)
+            params = (league_username.strip(),)
 
-        elif (discord_username):
+        elif (discord_username and discord_username.strip()):
             sql_statement = (
                 'SELECT * FROM player_table WHERE discord_username = ?;'
             )
-            params = (discord_username,)
+            params = (discord_username.strip(),)
 
         else:
             sql_statement = (
                 'SELECT * FROM player_table WHERE nickname = ?;'
             )
-            params = (nickname,)
+            params = (nickname.strip(),)
 
         return self.bot.get_cog('DatabaseHandler').execute_select(sql_statement, params, 1)

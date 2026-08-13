@@ -80,14 +80,14 @@ class DatabaseHandler(commands.Cog):
             cursor = self.conn.cursor()
             cursor.execute(sql_statement, params)
             self.conn.commit()
-            return cursor.fetchone()
+            return
 
         except sqlite3.Error as e:
             print(f'[ERR] SQLite3: {e}')
-            return None
+            return
         except ConnectionError as e:
             print(f'[ERR] Connection: {e}')
-            return None
+            return
 
 
     def create_tables(self):

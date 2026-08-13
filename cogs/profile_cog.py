@@ -16,28 +16,32 @@ class ProfileCog(commands.Cog):
         if ((discord_username is not None) and (nickname is not None)):
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username, discord_username, nickname) '
-                'VALUES (?, ?, ?);'
+                'VALUES (?, ?, ?)'
+                'RETURNING *;'
             )
             params = (league_username, discord_username, nickname)
 
         elif (discord_username is not None):
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username, discord_username) '
-                'VALUES (?, ?);'
+                'VALUES (?, ?)'
+                'RETURNING *;'
             )
             params = (league_username, discord_username)
 
         elif (nickname is not None):
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username, nickname) '
-                'VALUES (?, ?);'
+                'VALUES (?, ?)'
+                'RETURNING *;'
             )
             params = (league_username, nickname)
 
         else:
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username) '
-                'VALUES (?);'
+                'VALUES (?)'
+                'RETURNING *;'
             )
             params = (league_username,)
 
@@ -48,7 +52,7 @@ class ProfileCog(commands.Cog):
         league_username: str=None,
         discord_username:str=None,
         nickname: str=None
-    ) -> int:
+    ):
         if not any(v for v in [league_username, discord_username, nickname] if v and v.strip()):
             raise ValueError('Must enter at least one: league_username, discord_username, nickname')
             return None

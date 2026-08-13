@@ -65,12 +65,10 @@ class StatsCog(commands.Cog):
             await ctx.send('ERR: Could not load profile_cog')
             return
 
-        '''
         game_cog = self.bot.get_cog('GameCog')
         if (game_cog is None):
             await ctx.send('ERR: Could not load game_cog')
             return
-        '''
 
         # Read bytes from screenshot so ImageReader can interact
         # with the photo wihtout an open connection to the image.
@@ -83,8 +81,7 @@ class StatsCog(commands.Cog):
         else:
             game_result = 'loss'
 
-        # gameID = await game_cog.insert_game()
-        # await ctx.send(str(gameID))
+        gameID = await game_cog.insert_game()
 
         # Insert stats for each player into game_player_table
         for player_num in range(1, 11):

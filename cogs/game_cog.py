@@ -12,7 +12,8 @@ class GameCog(commands.Cog):
     async def insert_game(self):
         sql_statement = (
             'INSERT OR IGNORE INTO game_table (timestamp) '
-            'VALUES (?);'
+            'VALUES (?)'
+            'RETURNING *;'
         )
         params = (datetime.now(),)
         return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)

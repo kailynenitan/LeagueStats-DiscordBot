@@ -16,32 +16,28 @@ class ProfileCog(commands.Cog):
         if ((discord_username is not None) and (nickname is not None)):
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username, discord_username, nickname) '
-                'VALUES (?, ?, ?)'
-                'RETURNING *;'
+                'VALUES (?, ?, ?);'
             )
             params = (league_username, discord_username, nickname)
 
         elif (discord_username is not None):
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username, discord_username) '
-                'VALUES (?, ?)'
-                'RETURNING *;'
+                'VALUES (?, ?);'
             )
             params = (league_username, discord_username)
 
         elif (nickname is not None):
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username, nickname) '
-                'VALUES (?, ?)'
-                'RETURNING *;'
+                'VALUES (?, ?);'
             )
             params = (league_username, nickname)
 
         else:
             sql_statement = (
                 'INSERT OR IGNORE INTO player_table (league_username) '
-                'VALUES (?)'
-                'RETURNING *;'
+                'VALUES (?);'
             )
             params = (league_username,)
 

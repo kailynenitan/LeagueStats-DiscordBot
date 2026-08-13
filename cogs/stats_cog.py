@@ -18,7 +18,7 @@ class StatsCog(commands.Cog):
         self.bot = bot
     
 
-    def insert_match(
+    async def _insert_match(
         self,
         username: str,
         kills: int, deaths: int, assists: int,
@@ -26,9 +26,16 @@ class StatsCog(commands.Cog):
         gold: int,
         result: str
     ):
-        pass
+        game_cog = self.bot.get_cog('GameCog')
+        if (game_cog is None):
+            await ctx.send('ERR: Could not load game_cog')
+            return
+        gameID = await game_cog.insert_game()
+
         '''
-        purpose: insert all data from screenshot
+        Insert one player's stats from one game to the game_player_table
+        in the league_stats database
+
 
         gameID = new row in game_table
 
@@ -65,11 +72,6 @@ class StatsCog(commands.Cog):
             await ctx.send('ERR: Could not load profile_cog')
             return
 
-        game_cog = self.bot.get_cog('GameCog')
-        if (game_cog is None):
-            await ctx.send('ERR: Could not load game_cog')
-            return
-
         # Read bytes from screenshot so ImageReader can interact
         # with the photo wihtout an open connection to the image.
         image_bytes = await attachment_list[0].read()
@@ -80,9 +82,7 @@ class StatsCog(commands.Cog):
             game_result = 'win'
         else:
             game_result = 'loss'
-
-        gameID = await game_cog.insert_game()
-
+        
         # Insert stats for each player into game_player_table
         for player_num in range(1, 11):
             
@@ -95,15 +95,14 @@ class StatsCog(commands.Cog):
             if (not stats):
                 await ctx.send('ERR: Unable to read stats')
                 continue
-            '''
-            if ((not stats) or (not stats[0]) or (not stats[0].strip())):
-                continue
-            '''
 
             league_username = stats[0]
             kills, deaths, assists, cs, gold = stats[1:6]
+            playerID = await profile_cog.insert_player(league_username)
 
-            player_rowID = await profile_cog.insert_player(league_username)
-            playerID = (await profile_cog.select_player(league_username=league_username))[0]
+            await ctx.send(str(playerID))
+            # playerID = (await profile_cog.select_player(league_username=league_username))[0]
+
+            # insert match here
             
         return

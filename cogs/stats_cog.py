@@ -98,10 +98,10 @@ class StatsCog(commands.Cog):
 
             league_username = stats[0]
             kills, deaths, assists, cs, gold = stats[1:6]
-            playerID = await profile_cog.insert_player(league_username)
+            await profile_cog.insert_player(league_username)
 
+            playerID = (await profile_cog.select_player(league_username=league_username))[0]
             await ctx.send(str(playerID))
-            # playerID = (await profile_cog.select_player(league_username=league_username))[0]
 
             # insert match here
             

@@ -18,46 +18,6 @@ class StatsCog(commands.Cog):
         self.bot = bot
     
 
-    async def _insert_match(
-        self,
-        playerID: int, username: str,
-        kills: int, deaths: int, assists: int,
-        cs: int, gold: int,
-        result: str
-    ):
-        game_cog = self.bot.get_cog('GameCog')
-        if (game_cog is None):
-            await ctx.send('ERR: Could not load game_cog')
-            return
-        gameID = await game_cog.insert_game()
-
-        sql_statement = (
-            'INSERT INTO game_player_table '
-            'VALUES (?,?,?,?,?,?,?,?);'
-        )
-        params = (playerID, username,
-                  kills, deaths, assists,
-                  cs, gold,
-                  result
-        )
-        self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
-        return
-
-        '''
-        Insert one player's stats from one game to the game_player_table
-        in the league_stats database
-
-
-        gameID = new row in game_table
-
-        for every player in screenshot:
-            IF player is not in player_table:
-                add player to player_table
-            
-            make new row in game_player_table
-        '''
-
-
     @commands.command(name='read_image')
     async def insert_screenshot(self, ctx):
         '''
@@ -81,6 +41,17 @@ class StatsCog(commands.Cog):
         profile_cog = self.bot.get_cog('ProfileCog')
         if (profile_cog is None):
             await ctx.send('ERR: Could not load profile_cog')
+            return
+
+        game_cog = self.bot.get_cog('GameCog')
+        if (game_cog is None):
+            await ctx.send('ERR: Could not load game_cog')
+            return
+        gameID = await game_cog.insert_game()
+
+        db_cog = self.bot.get_cog('DatabaseHandler')
+        if (db_cog is None):
+            await ctx.send('ERR: Could not load db_cog')
             return
 
         # Read bytes from screenshot so ImageReader can interact
@@ -109,11 +80,21 @@ class StatsCog(commands.Cog):
 
             league_username = stats[0]
             kills, deaths, assists, cs, gold = stats[1:6]
+            gold = gold.replace(',', '')
             await profile_cog.insert_player(league_username)
 
             playerID = (await profile_cog.select_player(league_username=league_username))[0]
-            await ctx.send(str(playerID))
-
-            await _insert_match(playerID, league_username, int(kills), int(deaths), int(assists), int(cs), int(gold), player_result)
             
+            sql_statement = (
+                'INSERT INTO game_player_table (gameID, playerID, kills, deaths, assists, cs, gold, result) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?, ?);'
+            )
+            params = (gameID, playerID,
+                      int(kills), int(deaths), int(assists),
+                      int(cs), int(gold),
+                      player_result
+            )
+            db_cog.execute_insert(sql_statement, params)
+
+
         return

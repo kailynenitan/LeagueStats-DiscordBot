@@ -80,7 +80,7 @@ class DatabaseHandler(commands.Cog):
             cursor = self.conn.cursor()
             cursor.execute(sql_statement, params)
             self.conn.commit()
-            return
+            return cursor.lastrowid
 
         except sqlite3.Error as e:
             print(f'[ERR] SQLite3: {e}')

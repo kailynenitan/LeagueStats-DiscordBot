@@ -48,6 +48,8 @@ class StatsBot(commands.Bot):
 
         print(f'Logged in as {self.user}')
 
+    async def on_command_error(self, ctx, error):
+        await ctx.send(f'ERR: {type(error).__name__}: {error}')
 
 async def main():   
     load_dotenv()

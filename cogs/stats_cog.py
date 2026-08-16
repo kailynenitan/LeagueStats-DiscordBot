@@ -8,6 +8,7 @@ from discord.ext import commands
 
 import config
 from cogs.ocr_handler import ImageReader
+from cogs.views import ValidateStatsView
 
 class StatsCog(commands.Cog):
     """
@@ -97,4 +98,11 @@ class StatsCog(commands.Cog):
             db_cog.execute_insert(sql_statement, params)
 
 
+        view = ValidateStatsView()
+        view.message = await ctx.send(
+            embed=discord.Embed(
+                title='Button Counter', description='Click on the button to count', color=discord.Color.blurple()
+            ),
+            view=view,
+        ) 
         return

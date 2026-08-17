@@ -66,7 +66,8 @@ class StatsCog(commands.Cog):
         else:
             game_result = 'loss'
         
-        # Insert stats for each player into game_player_table
+        player_stats=[]
+        # Read stats for each player into players_stats list
         for player_num in range(1, 11):
             
             # The value of game_result corresponds to the status of the players
@@ -79,9 +80,16 @@ class StatsCog(commands.Cog):
                 await ctx.send('ERR: Unable to read stats')
                 continue
 
+            player_stats.append(stats)
+
+            '''
             league_username = stats[0]
             kills, deaths, assists, cs, gold = stats[1:6]
             gold = gold.replace(',', '')
+            '''
+
+
+            '''
             await profile_cog.insert_player(league_username)
 
             playerID = (await profile_cog.select_player(league_username=league_username))[0]
@@ -96,13 +104,15 @@ class StatsCog(commands.Cog):
                       player_result
             )
             db_cog.execute_insert(sql_statement, params)
-
+            '''
+        await ctx.send(player_stats)
 
         view = ValidateStatsView()
         view.message = await ctx.send(
             embed=discord.Embed(
-                title='Button Counter', description='Click on the button to count', color=discord.Color.blurple()
+                title='Disable test', description='Disable the below button by clicking it.', color=discord.Color.orange()
             ),
             view=view,
         ) 
+
         return

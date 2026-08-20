@@ -11,8 +11,9 @@ modal where the user can edit the information.
 '''
 class GameDataView(discord.ui.View):
 
-    def __init__(self, players_data: list[dict], authorID: int):
+    def __init__(self, gameID: int, players_data: list[dict], authorID: int):
         super().__init__(timeout=300)
+        self.gameID = gameID
         self.players = players_data
         self.authorID = authorID
         self.current_index = 0
@@ -27,18 +28,70 @@ class GameDataView(discord.ui.View):
         player = self.players[self.current_index]
         embed = discord.Embed(
             title=f'Verify Stats - Player {self.current_index + 1} of {len(self.players)}',
-            description=f'Reviewing stats for **{player['username']**}',
+            description=f'Reviewing stats for **{player['username']}**',
             color=discord.Color.blurple()
         )
-        embed.add_field(name="Kills", value=str(player['kills']), inline=True)
-        embed.add_field(name="Deaths", value=str(player['deaths']), inline=True)
-        embed.add_field(name="Assists", value=str(player['assists']), inline=True)
-        embed.add_field(name="CS", value=str(player['cs']), inline=True)
-        embed.add_field(name="Gold", value=str(player['gold']), inline=True)
-        embed.add_field(name="Vision", value=str(player['vision']), inline=True)
-        embed.add_field(name="Damage", value=str(player['damage']), inline=True)
-        embed.set_footer(text="Click 'Edit Core' or 'Edit Extra' to adjust values before saving.")
+        embed.add_field(name='Kills', value=str(player['kills']), inline=True)
+        embed.add_field(name='Deaths', value=str(player['deaths']), inline=True)
+        embed.add_field(name='Assists', value=str(player['assists']), inline=True)
+        embed.add_field(name='CS', value=str(player['cs']), inline=True)
+        embed.add_field(name='Gold', value=str(player['gold']), inline=True)
+        embed.set_footer(text='Click \'Edit Core\' or \'Edit Extra\' to adjust values before saving.')
         return embed
+
+    @discord.ui.button(label='Previous', style=discord.ButtonStyle.secondary, row=0)
+    async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.current_index = (self.current_index - 1) % len(self.players)
+        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+
+    @discord.ui.button(label='Next', style=discord.ButtonStyle.secondary, row=0)
+    async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.current_index = (self.current_index + 1) % len(self.players)
+        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+
+    @discord.ui.button(label='Edit Core Stats', style=discord.ButtonStyle.primary, row=1)
+    async def edit_core(self, interaction: discord.Interaction, button: discord.ui.Button):
+        player = self.players[self.current_index]
+        modal = CoreStatsModal(player, self)
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label='Edit Extra Stats', style=discord.ButtonStyle.primary, row=1)
+    async def edit_extra(self, interaction: discord.Interaction, button: discord.ui.Button):
+        player = self.players[self.current_index]
+        modal = ExtraStatsModal(player, self)
+        await interaction.response.send_modal(modal)
+ 
+    @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
+    async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        match_dao = interaction.client.get_cog('MatchDAO')
+        if (match_dao is None):
+            await interaction.response.send_message('Match data access object not found.', ephemeral=True)
+            return
+
+        player_dao = interaction.client.get_cog('PlayerDAO')
+        if (player_dao is None):
+            await interaction.response.send_message('Player table data access object not found.', ephemeral=True)
+            return
+
+        try:
+            for player_dict in self.players_data:
+                player_dao.insert_player(player_dict['username'])
+                playerID = player_dao.select_playerID(league_username=player_dict['username'])
+                match_dao.insert_player_match(self.gameID, playerID, player_dict)
+        except Exception as e:
+            await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
+            return
+
+        for item in self.children:
+            item.disabled=True
+
+        embed = discord.Embed(
+            title='Data Saved Successfully.',
+            description=f'Verified data for **{len(self.players)} players** has been added to the database.',
+            color=discord.Color.green()
+        )
+        await interaction.response.edit_message(embed=embed, view=self)
+        self.stop()
      
     async def on_error(
             self, interaction: discord.Interaction[discord.Client], error: Exceptionj, item: discord.ui.Item[typing.Any]) -> None:

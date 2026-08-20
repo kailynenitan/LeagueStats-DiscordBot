@@ -2,9 +2,28 @@ import asyncio
 import discord
 from discord.ext import commands
 
-class LeaderboardCog(commands.Cog):
+class MatchDAO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    async def insert_player_match(self, gameID: int, playerID: int, player_data: dict):
+        # Insert an entry into game_player_table in the database
+        # This should only be called after verifying that the data is correct
+        sql_statement = (
+            'INSERT INTO game_player_table (gameID, playerID, kills, deaths, assists, cs, gold, result) '
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?);'
+        )
+        params = (
+                gameID,
+                playerID,
+                player_data['kills'],
+                player_data['deaths'],
+                player_data['assists'],
+                player_data['cs'],
+                player_data['gold'],
+                player_data['result']
+        )
+        return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
 
     async def select_player_stat(self, ctx):
         pass

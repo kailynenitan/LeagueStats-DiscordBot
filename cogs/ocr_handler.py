@@ -90,7 +90,7 @@ class ImageReader(easyocr.Reader):
         Args:
             img: The original image to read from.
             arg: The name of the region of img to retrieve text from.
-
+i have a python project where im making a discord bot that is connected to a sql database.
         Returns:
             A list of strings of text found in the region specified
         '''

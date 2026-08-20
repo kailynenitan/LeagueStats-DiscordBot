@@ -6,9 +6,10 @@ import sqlite3
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
-import config
 from cogs.ocr_handler import ImageReader
-from cogs.views import ValidateStatsView
+from cogs.matchdata_view import GameDataView
+
+
 
 class StatsCog(commands.Cog):
     """
@@ -20,7 +21,7 @@ class StatsCog(commands.Cog):
     
 
     @commands.command(name='read_image')
-    async def insert_screenshot(self, ctx):
+    async def insert_screenshot(self, ctx, interaction:discord.Interaction):
         '''
         Update the SQL database from a screenshot provided by the user
 
@@ -39,12 +40,12 @@ class StatsCog(commands.Cog):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
 
-        profile_cog = self.bot.get_cog('ProfileCog')
+        profile_cog = self.bot.get_cog('PlayerDAO')
         if (profile_cog is None):
             await ctx.send('ERR: Could not load profile_cog')
             return
 
-        game_cog = self.bot.get_cog('GameCog')
+        game_cog = self.bot.get_cog('GameDAO')
         if (game_cog is None):
             await ctx.send('ERR: Could not load game_cog')
             return
@@ -66,7 +67,8 @@ class StatsCog(commands.Cog):
         else:
             game_result = 'loss'
         
-        player_stats=[]
+        # Gather all the raw data from the OCR into match_data as a dictionary for each player
+        match_data = []
         for player_num in range(1, 11):
             stats = img_reader.read_region(f'p{player_num}')
             if (not stats):
@@ -77,35 +79,21 @@ class StatsCog(commands.Cog):
             # shown in the team listed in the top half of the screenshot. So, all
             # players in the bottom half must be the opposite game_result
             player_result = game_result if player_num <= 5 else ('loss' if game_result == 'win' else 'win')
-            stats.append(player_result)
-            player_stats.append(stats)
 
-            '''
-            '''
+            data_dict = {
+                'username': stats[0] if stats[0] else None,
+                'kills': stats[1] if stats[1] else None,
+                'deaths': stats[2] if stats[2] else None,
+                'assists': stats[3] if stats[3] else None,
+                'cs': stats[4] if stats[4] else None,
+                'gold': stats[5] if stats[5] else None,
+                'result': player_result
+            }
+            match_data.append(data_dict)
 
-
-            '''
-            await profile_cog.insert_player(league_username)
-
-            playerID = (await profile_cog.select_player(league_username=league_username))[0]
-            
-            sql_statement = (
-                'INSERT INTO game_player_table (gameID, playerID, kills, deaths, assists, cs, gold, result) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?, ?);'
-            )
-            params = (gameID, playerID,
-                      int(kills), int(deaths), int(assists),
-                      int(cs), int(gold),
-                      player_result
-            )
-            db_cog.execute_insert(sql_statement, params)
-            '''
-
-        validate_views=[]
-        for stat in player_stats:
-            league_username = stat[0]
-            kills, deaths, assists, cs, gold, result = stat[1:7]
-            gold = gold.replace(',', '')
-            validate_views.append(ValidateStatsView(league_username, kills, deaths, assists, cs, gold, result))
+        match_data_copy = [dict(m) for m in match_data]
+        view = GameDataView(data_copy, authorID = interaction.user.id)
+        embed = view.create_embed()
+        await interaction.response.send_message(embed=embed, view=view)
 
         return

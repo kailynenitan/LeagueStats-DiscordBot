@@ -7,11 +7,10 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from pathlib import Path
 
-import config
 from cogs.database_handler import DatabaseHandler
-from cogs.game_cog import GameCog
-from cogs.leaderboard_cog import LeaderboardCog
-from cogs.profile_cog import ProfileCog
+from cogs.game_dao import GameDAO
+from cogs.match_dao import MatchDAO
+from cogs.player_dao import PlayerDAO
 from cogs.stats_cog import StatsCog
 
 
@@ -41,9 +40,9 @@ class StatsBot(commands.Bot):
         await self.add_cog(DatabaseHandler(self))
         self.get_cog('DatabaseHandler').create_tables() 
 
-        await self.add_cog(GameCog(self))
-        await self.add_cog(LeaderboardCog(self))
-        await self.add_cog(ProfileCog(self))
+        await self.add_cog(GameDAO(self))
+        await self.add_cog(MatchDAO(self))
+        await self.add_cog(PlayerDAO(self))
         await self.add_cog(StatsCog(self))
 
         print(f'Logged in as {self.user}')

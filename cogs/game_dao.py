@@ -5,7 +5,7 @@ from discord.ext import commands
 
 
 # WIP
-class GameCog(commands.Cog):
+class GameDAO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

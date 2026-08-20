@@ -67,25 +67,20 @@ class StatsCog(commands.Cog):
             game_result = 'loss'
         
         player_stats=[]
-        # Read stats for each player into players_stats list
         for player_num in range(1, 11):
-            
-            # The value of game_result corresponds to the status of the players
-            # shown in the team listed in the top half of the screenshot. So, all
-            # players in the bottom half must be the opposite game_result
-            player_result = game_result if player_num <= 5 else ('loss' if game_result == 'win' else 'win')
-
             stats = img_reader.read_region(f'p{player_num}')
             if (not stats):
                 await ctx.send('ERR: Unable to read stats')
                 continue
 
+            # The value of game_result corresponds to the status of the players
+            # shown in the team listed in the top half of the screenshot. So, all
+            # players in the bottom half must be the opposite game_result
+            player_result = game_result if player_num <= 5 else ('loss' if game_result == 'win' else 'win')
+            stats.append(player_result)
             player_stats.append(stats)
 
             '''
-            league_username = stats[0]
-            kills, deaths, assists, cs, gold = stats[1:6]
-            gold = gold.replace(',', '')
             '''
 
 
@@ -105,14 +100,12 @@ class StatsCog(commands.Cog):
             )
             db_cog.execute_insert(sql_statement, params)
             '''
-        await ctx.send(player_stats)
 
-        view = ValidateStatsView()
-        view.message = await ctx.send(
-            embed=discord.Embed(
-                title='Disable test', description='Disable the below button by clicking it.', color=discord.Color.orange()
-            ),
-            view=view,
-        ) 
+        validate_views=[]
+        for stat in player_stats:
+            league_username = stat[0]
+            kills, deaths, assists, cs, gold, result = stat[1:7]
+            gold = gold.replace(',', '')
+            validate_views.append(ValidateStatsView(league_username, kills, deaths, assists, cs, gold, result))
 
         return

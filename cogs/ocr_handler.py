@@ -7,8 +7,6 @@ import string
 import torch
 from dotenv import load_dotenv
 
-import config
-
 
 '''
 A class for the OCR (easyocr) to be used with the cogs.
@@ -18,6 +16,22 @@ class ImageReader(easyocr.Reader):
     def __init__(self, image_bytes: bytes):
         has_gpu = torch.cuda.is_available()
         super().__init__(['en'], gpu=has_gpu)
+        self.REGIONS = {
+            'mask_items':   (0.24000, 0.00000, 0.34000, 1.00000),
+            'mask_slash1':  (0.63568, 0.00000, 0.02300, 1.00000),
+            'mask_slash2':  (0.69389, 0.00000, 0.02300, 1.00000)
+            'game_result':  (0.06940, 0.13309, 0.08547, 0.04537),
+            'p1':           (0.11179, 0.37386, 0.50051, 0.04355),
+            'p2':           (0.11179, 0.42286, 0.50051, 0.04355),
+            'p3':           (0.11179, 0.47186, 0.50051, 0.04355),
+            'p4':           (0.11179, 0.51925, 0.50051, 0.04355),
+            'p5':           (0.11179, 0.56624, 0.50051, 0.04355),
+            'p6':           (0.11179, 0.67332, 0.50051, 0.04355),
+            'p7':           (0.11179, 0.72232, 0.50051, 0.04355),
+            'p8':           (0.11179, 0.76950, 0.50051, 0.04355),
+            'p9':           (0.11179, 0.82032, 0.50051, 0.04355),
+            'p10':          (0.11179, 0.86751, 0.50051, 0.04355)
+        }
 
         # Save image as np array
         np_arr = np.frombuffer(image_bytes, np.uint8)
@@ -42,7 +56,7 @@ class ImageReader(easyocr.Reader):
         Returns:
             Four integers of the x-coordinate, y-coordinate, width, and height of a region in an image.
         '''
-        r = config.REGIONS[region]
+        r = self.REGIONS[region]
         height, width = img.shape[:2]
         x = int(r[0] * width)
         y = int(r[1] * height)
@@ -59,7 +73,9 @@ class ImageReader(easyocr.Reader):
             img: The image to lay a mask over
             region: The area of an image to cover
         '''
-        
+        mask_dict = {
+        }
+       
         x, y, w, h = self.__get_region_coord(img, region)
         topleft = (x, y)
         botright = (x + w, y + h)

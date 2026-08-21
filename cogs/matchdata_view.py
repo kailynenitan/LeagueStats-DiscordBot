@@ -106,10 +106,10 @@ class CoreStatsModal(discord.ui.Modal):
         self.player_data = player_data
         self.parent_view = parent_view
 
-        self.kills = discord.ui.TextInput(label='Kills')
-        self.deaths = discord.ui.TextInput(label='Deaths')
-        self.assists = discord.ui.TextInput(label='Assists')
-        self.cs = discord.ui.TextInput(label='CS (Creep Score)')
+        self.kills = discord.ui.TextInput(label='Kills', default=str(player_data['kills']), max_length=5)
+        self.deaths = discord.ui.TextInput(label='Deaths', default=str(player_data['deaths']), max_length=5)
+        self.assists = discord.ui.TextInput(label='Assists', default=str(player_data['assists']), max_length=5)
+        self.cs = discord.ui.TextInput(label='CS (Creep Score)', default=str(player_data['cs']), max_length=5)
 
         for item in [self.kills, self.deaths, self.assists, self.cs]:
             self.add_item(item)
@@ -134,8 +134,8 @@ class ExtraStatsModal(discord.ui.Modal):
         self.player_data = player_data
         self.parent_view = parent_view
 
-        self.username = discord.ui.TextInput(label='Username')
-        self.gold = discord.ui.TextInput(label='Gold')
+        self.username = discord.ui.TextInput(label='Username', default=str(player_data['username']))
+        self.gold = discord.ui.TextInput(label='Gold', default=str(player_data['gold']))
 
         for item in [self.username, self.gold]:
             self.add_item(item)

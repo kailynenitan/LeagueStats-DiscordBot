@@ -39,6 +39,32 @@ class GameDataView(discord.ui.View):
         embed.set_footer(text='Click \'Edit Core\' or \'Edit Extra\' to adjust values before saving.')
         return embed
 
+    def create_overview_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title='Match Summary Overview',
+            description='Check all players below. Select a player to edit or confirm directly.',
+            color=discord.Color.gold()
+        )
+
+        overview_lines=[]
+        for p in self.players_data:
+            overview_lines.append(
+                    f'**{p['username']}**: {p['kills']}/{p['deaths']}/{p['assists']} | {p['cs']} CS | {p['gold']}g'
+            )
+
+        embed.add_field(
+            name='Roster',
+            value='\n'.join(overview_lines),
+            inline=False
+        )
+        embed.set_footer(text='Click \'Confirm and Save to Database\' to save or use the next and previous buttons to edit specific players.')
+        return embed
+
+    @discord.ui.button(label='Overview All', style=discord.ButtonStyle.secondary, row=0)
+    async def overview_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        embed = self.create_overview_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
     @discord.ui.button(label='Previous', style=discord.ButtonStyle.secondary, row=0)
     async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current_index = (self.current_index - 1) % len(self.players_data)

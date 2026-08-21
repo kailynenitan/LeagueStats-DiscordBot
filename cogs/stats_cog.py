@@ -21,7 +21,7 @@ class StatsCog(commands.Cog):
     
 
     @commands.command(name='read_image')
-    async def insert_screenshot(self, ctx, interaction:discord.Interaction):
+    async def insert_screenshot(self, ctx):
         '''
         Update the SQL database from a screenshot provided by the user
 
@@ -92,8 +92,8 @@ class StatsCog(commands.Cog):
             match_data.append(data_dict)
 
         match_data_copy = [dict(m) for m in match_data]
-        view = GameDataView(data_copy, authorID = interaction.user.id)
+        view = GameDataView(match_data_copy, authorID = ctx.user.id)
         embed = view.create_embed()
-        await interaction.response.send_message(embed=embed, view=view)
+        await ctx.send(embed=embed, view=view)
 
         return

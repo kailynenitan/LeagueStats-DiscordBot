@@ -14,7 +14,7 @@ class GameDataView(discord.ui.View):
     def __init__(self, gameID: int, players_data: list[dict], authorID: int):
         super().__init__(timeout=300)
         self.gameID = gameID
-        self.players = players_data
+        self.players_data = players_data
         self.authorID = authorID
         self.current_index = 0
 
@@ -25,9 +25,9 @@ class GameDataView(discord.ui.View):
         return True
 
     def create_embed(self) -> discord.Embed:
-        player = self.players[self.current_index]
+        player = self.players_data[self.current_index]
         embed = discord.Embed(
-            title=f'Verify Stats - Player {self.current_index + 1} of {len(self.players)}',
+            title=f'Verify Stats - Player {self.current_index + 1} of {len(self.players_data)}',
             description=f'Reviewing stats for **{player['username']}**',
             color=discord.Color.blurple()
         )
@@ -41,23 +41,23 @@ class GameDataView(discord.ui.View):
 
     @discord.ui.button(label='Previous', style=discord.ButtonStyle.secondary, row=0)
     async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.current_index = (self.current_index - 1) % len(self.players)
+        self.current_index = (self.current_index - 1) % len(self.players_data)
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
     @discord.ui.button(label='Next', style=discord.ButtonStyle.secondary, row=0)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.current_index = (self.current_index + 1) % len(self.players)
+        self.current_index = (self.current_index + 1) % len(self.players_data)
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
     @discord.ui.button(label='Edit Core Stats', style=discord.ButtonStyle.primary, row=1)
     async def edit_core(self, interaction: discord.Interaction, button: discord.ui.Button):
-        player = self.players[self.current_index]
+        player = self.players_data[self.current_index]
         modal = CoreStatsModal(player, self)
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label='Edit Extra Stats', style=discord.ButtonStyle.primary, row=1)
     async def edit_extra(self, interaction: discord.Interaction, button: discord.ui.Button):
-        player = self.players[self.current_index]
+        player = self.players_data[self.current_index]
         modal = ExtraStatsModal(player, self)
         await interaction.response.send_modal(modal)
  
@@ -75,9 +75,9 @@ class GameDataView(discord.ui.View):
 
         try:
             for player_dict in self.players_data:
-                player_dao.insert_player(player_dict['username'])
-                playerID = player_dao.select_playerID(league_username=player_dict['username'])
-                match_dao.insert_player_match(self.gameID, playerID, player_dict)
+                await player_dao.insert_player(player_dict['username'])
+                playerID = await player_dao.select_playerID(league_username=player_dict['username'])
+                await match_dao.insert_player_match(self.gameID, playerID, player_dict)
         except Exception as e:
             await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
             return
@@ -87,7 +87,7 @@ class GameDataView(discord.ui.View):
 
         embed = discord.Embed(
             title='Data Saved Successfully.',
-            description=f'Verified data for **{len(self.players)} players** has been added to the database.',
+            description=f'Verified data for **{len(self.players_data)} players** has been added to the database.',
             color=discord.Color.green()
         )
         await interaction.response.edit_message(embed=embed, view=self)
@@ -99,10 +99,6 @@ class GameDataView(discord.ui.View):
         message = f'An error occurred while processing the interaction for {str(item)}:\n```py\n{tb}\n```'
         await interaction.response.send_message(message)
 
-    def _disable_all(self) -> None:
-        for item in self.children:
-            if isinstance(item, discord.ui.Button):
-                item.disabled = True
 
 class CoreStatsModal(discord.ui.Modal):
     def __init__(self, player_data: dict, parent_view: 'GameDataView'):

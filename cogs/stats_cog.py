@@ -92,7 +92,7 @@ class StatsCog(commands.Cog):
             match_data.append(data_dict)
 
         match_data_copy = [dict(m) for m in match_data]
-        view = GameDataView(match_data_copy, authorID = ctx.user.id)
+        view = GameDataView(gameID, match_data_copy, authorID = ctx.author.id)
         embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
 

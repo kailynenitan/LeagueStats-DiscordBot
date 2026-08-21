@@ -77,7 +77,7 @@ class PlayerDAO(commands.Cog):
         league_username: str=None,
         discord_username:str=None,
         nickname: str=None
-    ):
+    ) -> int | None:
         if not any(v for v in [league_username, discord_username, nickname] if v and v.strip()):
             raise ValueError('Must enter at least one: league_username, discord_username, nickname')
             return None
@@ -100,5 +100,5 @@ class PlayerDAO(commands.Cog):
             )
             params = (nickname.strip(),)
 
-        return self.bot.get_cog('DatabaseHandler').execute_select(sql_statement, params, 1)
-
+        row = self.bot.get_cog('DatabaseHandler').execute_select(sql_statement, params, 1)
+        return row[0] if row else None 

@@ -54,10 +54,10 @@ class DatabaseHandler(commands.Cog):
             return rows
 
         except sqlite3.Error as e:
-            print(f'[ERR] SQLite3: {e}')
+            print(f'[ERR - Select] SQLite3: {e}')
             return None
         except ConnectionError as e:
-            print(f'[ERR] Connection: {e}')
+            print(f'[ERR - Select] Connection: {e}')
             return None
 
     def execute_insert(self, sql_statement: str, params: tuple=()):
@@ -83,10 +83,10 @@ class DatabaseHandler(commands.Cog):
             return cursor.lastrowid
 
         except sqlite3.Error as e:
-            print(f'[ERR] SQLite3: {e}')
+            print(f'[ERR - Insert] SQLite3: {e}')
             return
         except ConnectionError as e:
-            print(f'[ERR] Connection: {e}')
+            print(f'[ERR - Insert] Connection: {e}')
             return
 
 

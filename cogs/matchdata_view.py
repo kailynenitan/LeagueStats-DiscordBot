@@ -156,7 +156,7 @@ class CoreStatsModal(discord.ui.Modal):
 
 class ExtraStatsModal(discord.ui.Modal):
     def __init__(self, player_data: dict, parent_view: 'GameDataView'):
-        super().__init__(title=f'Extra Stats: {player_data['name']}')
+        super().__init__(title=f'Extra Stats: {player_data['username']}')
         self.player_data = player_data
         self.parent_view = parent_view
 

@@ -11,7 +11,7 @@ from cogs.matchdata_view import GameDataView
 
 
 
-class StatsCog(commands.Cog):
+class ImageCog(commands.Cog):
     """
     Holds commands that will insert match history data into the SQL database
     """

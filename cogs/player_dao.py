@@ -40,14 +40,14 @@ class PlayerDAO(commands.Cog):
             )
             params = (league_username,)
 
-        return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
+        return self.bot.db_handler.execute_insert(sql_statement, params)
 
     async def select_player(
         self,
         league_username: str=None,
         discord_username:str=None,
         nickname: str=None
-    ):
+    ) -> (str) | None:
         if not any(v for v in [league_username, discord_username, nickname] if v and v.strip()):
             raise ValueError('Must enter at least one: league_username, discord_username, nickname')
             return None
@@ -70,7 +70,7 @@ class PlayerDAO(commands.Cog):
             )
             params = (nickname.strip(),)
 
-        return self.bot.get_cog('DatabaseHandler').execute_select(sql_statement, params, 1)
+        return = self.bot.db_handler.execute_select(sql_statement, params, 1)
 
     async def select_playerID(
         self,
@@ -100,5 +100,5 @@ class PlayerDAO(commands.Cog):
             )
             params = (nickname.strip(),)
 
-        row = self.bot.get_cog('DatabaseHandler').execute_select(sql_statement, params, 1)
+        row = self.bot.db_handler.execute_select(sql_statement, params, 1)
         return row[0] if row else None 

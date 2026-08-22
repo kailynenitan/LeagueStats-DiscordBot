@@ -23,7 +23,7 @@ class MatchDAO(commands.Cog):
                 player_data['gold'],
                 player_data['result']
         )
-        return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
+        return self.bot.db_handler.execute_insert(sql_statement, params)
 
     async def select_player_stat(self, ctx):
         pass

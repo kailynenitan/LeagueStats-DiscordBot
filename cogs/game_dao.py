@@ -15,7 +15,7 @@ class GameDAO(commands.Cog):
             'VALUES (?);'
         )
         params = (datetime.now(),)
-        return self.bot.get_cog('DatabaseHandler').execute_insert(sql_statement, params)
+        return self.bot.db_handler.execute_insert(sql_statement, params)
 
     @commands.command()
     async def select_top_mvp(self, ctx):

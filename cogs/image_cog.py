@@ -7,7 +7,8 @@ from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
 from cogs.ocr_handler import ImageReader
-from cogs.matchdata_view import GameDataView
+from cogs.verify_data_view import GameDataView
+
 
 
 

@@ -11,7 +11,7 @@ from cogs.database_handler import DatabaseHandler
 from cogs.game_dao import GameDAO
 from cogs.match_dao import MatchDAO
 from cogs.player_dao import PlayerDAO
-from cogs.stats_cog import StatsCog
+from cogs.image_cog import ImageCog
 
 
 # WIP
@@ -29,6 +29,7 @@ class StatsBot(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix='$', intents=intents)
         self.executor = ProcessPoolExecutor()
+        self.db_handler = None
 
     async def close(self):
         self.executor.shutdown()
@@ -39,11 +40,12 @@ class StatsBot(commands.Bot):
     async def setup_hook(self):
         await self.add_cog(DatabaseHandler(self))
         self.get_cog('DatabaseHandler').create_tables() 
+        self.db_handler = self.get_cog('DatabaseHandler')
 
         await self.add_cog(GameDAO(self))
         await self.add_cog(MatchDAO(self))
         await self.add_cog(PlayerDAO(self))
-        await self.add_cog(StatsCog(self))
+        await self.add_cog(ImageCog(self))
 
         print(f'Logged in as {self.user}')
 

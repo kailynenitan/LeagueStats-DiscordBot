@@ -57,7 +57,7 @@ class GameDataView(discord.ui.View):
             value='\n'.join(overview_lines),
             inline=False
         )
-        embed.set_footer(text='Click \'Confirm and Save to Database\' to save or use the next and previous buttons to edit specific players.')
+        embed.set_footer(text='Click \'Confirm and Save to Database\' to save.\nUse the next and previous buttons to edit specific players.')
         return embed
 
     @discord.ui.button(label='Overview All', style=discord.ButtonStyle.secondary, row=0)

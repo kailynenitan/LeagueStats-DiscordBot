@@ -10,6 +10,7 @@ from pathlib import Path
 from cogs.database_handler import DatabaseHandler
 from cogs.game_dao import GameDAO
 from cogs.match_dao import MatchDAO
+from cogs.player_cog import PlayerCommands
 from cogs.player_dao import PlayerDAO
 from cogs.image_cog import ImageCog
 
@@ -45,7 +46,9 @@ class StatsBot(commands.Bot):
         await self.add_cog(GameDAO(self))
         await self.add_cog(MatchDAO(self))
         await self.add_cog(PlayerDAO(self))
+
         await self.add_cog(ImageCog(self))
+        await self.add_cog(PlayerCommands(self))
 
         print(f'Logged in as {self.user}')
 

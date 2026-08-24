@@ -1,5 +1,3 @@
-import discord
-import sqlite3
 from discord.ext import commands
 
 
@@ -45,32 +43,26 @@ class PlayerDAO(commands.Cog):
     async def select_player(
         self,
         league_username: str=None,
-        discord_username:str=None,
+        discord_username: str=None,
         nickname: str=None
-    ) -> (str) | None:
+    ) -> (tuple) | None:
         if not any(v for v in [league_username, discord_username, nickname] if v and v.strip()):
             raise ValueError('Must enter at least one: league_username, discord_username, nickname')
             return None
 
         if (league_username and league_username.strip()):
-            sql_statement = (
-                'SELECT * FROM player_table WHERE league_username = ?;'
-            )
+            sql_statement = 'SELECT * FROM player_table WHERE league_username = ?;'
             params = (league_username.strip(),)
 
         elif (discord_username and discord_username.strip()):
-            sql_statement = (
-                'SELECT * FROM player_table WHERE discord_username = ?;'
-            )
+            sql_statement = 'SELECT * FROM player_table WHERE discord_username = ?;'
             params = (discord_username.strip(),)
 
         else:
-            sql_statement = (
-                'SELECT * FROM player_table WHERE nickname = ?;'
-            )
+            sql_statement = 'SELECT * FROM player_table WHERE nickname = ?;'
             params = (nickname.strip(),)
 
-        return = self.bot.db_handler.execute_select(sql_statement, params, 1)
+        return self.bot.db_handler.execute_select(sql_statement, params, 1)
 
     async def select_playerID(
         self,

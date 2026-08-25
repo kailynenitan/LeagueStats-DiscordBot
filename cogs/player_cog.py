@@ -21,11 +21,12 @@ class PlayerCommands(commands.Cog):
         if (not row):
             await ctx.send(f'No player found with league username: \'{league_username}\'')
             return
+
         db_id, db_league, db_discord, db_nickname = row
 
-        view = PlayerDataView(
-            title='Test title', description='Test description', return_data=[db_league, db_discord, db_nickname]
-        )
-        await ctx.send(f'Result: {row}', view=view)
+        # TODO: make embed to show player names
+
         return
 
+    async def update_player(self):
+        pass

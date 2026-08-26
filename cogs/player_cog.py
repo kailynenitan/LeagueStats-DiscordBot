@@ -1,5 +1,6 @@
-from discord.ext import commands
 from cogs.player_data_view import PlayerDataView
+from discord.ext import commands
+from typing import Any
 
 
 class PlayerCommands(commands.Cog):
@@ -10,10 +11,28 @@ class PlayerCommands(commands.Cog):
             await ctx.send('PlayerDAO cog is not loaded.')
             return
 
+    def _validate_input(self, **kwargs) -> dict[str, Any]:
+        invalid_input = {}
+        for key, value in kwargs.items():
+            if ((key == 'league_username') or 
+                (key == 'discord_username') or 
+                (key == 'nickname')) and (self.dao.select_player(value) is not None):
+                continue
+            else:
+                invalid_input[key] = value
+
+        return invalid_input
+
+
     @commands.command(name='names')
     async def select_all_names(self, ctx, league_username: str):
-        if (league_username is None) or (not league_username.strip()):
-            await ctx.send('Please enter a valid league_username.')
+        invalid_input = _validate_input(league_username=league_username)
+        if len(invalid_input) > 0:
+            for key, value in invalid_input.items():
+                if (key in ['league_username', 'discord_username', 'nickname']):
+                    await ctx.send(f'{key}: {value} was not found in the database')
+                else:
+                    await ctx.send(f'{key} is not a valid category for names in the database.')
             return
 
         row = await self.dao.select_player(league_username=league_username)
@@ -21,7 +40,7 @@ class PlayerCommands(commands.Cog):
             await ctx.send(f'No player found with league username: \'{league_username}\'')
             return
 
-        db_id, db_league, db_discord, db_nickname = row
+        _, db_league, db_discord, db_nickname = row
 
         # TODO: make embed to show player names
 
@@ -29,6 +48,4 @@ class PlayerCommands(commands.Cog):
 
     @commands.command(name='change_names')
     async def update_player_names(self, ctx, league_username: str):
-        if (league_username is None) or (not league_username.strip()):
-            await ctx.send('Please enter a valid league_username.')
-            return
+        pass

@@ -89,6 +89,34 @@ class DatabaseHandler(commands.Cog):
             print(f'[ERR - Insert] Connection: {e}')
             return
 
+    def execute_update(self, sql_statement: str, params: tuple=()):
+        '''
+        Execute a sql update query on the league_stats database
+       
+        Args:
+            sql_statement: sql insert query in str
+            params: Tuple of the dynamic variables used in sql_statement
+                
+        Returns:
+            bool: A boolean value representing if the query was successful
+        '''
+
+        if (not self.conn):
+            raise ConnectionError('Connection to database failed.')
+            return
+
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(sql_statement, params)
+            self.conn.commit()
+            return True
+
+        except sqlite3.Error as e:
+            print(f'[ERR - Update] SQLite3: {e}')
+            return False
+        except ConnectionError as e:
+            print(f'[ERR - Update] Connection: {e}')
+            return False
 
     def create_tables(self):
         self.conn = sqlite3.connect(self.DB_FILE)

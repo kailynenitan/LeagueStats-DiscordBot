@@ -8,6 +8,7 @@ class PlayerDAO(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+        self.COLUMNS = ['league_username', 'discord_username', 'nickname']
 
     async def insert_player(self, league_username: str, discord_username: str=None, nickname: str=None) -> int:
         if ((discord_username is not None) and (nickname is not None)):
@@ -94,3 +95,21 @@ class PlayerDAO(commands.Cog):
 
         row = self.bot.db_handler.execute_select(sql_statement, params, 1)
         return row[0] if row else None 
+
+    async def update_player(
+        self,
+        playerID: int,
+        category: str,
+        new_value: str
+    ) -> bool:
+        if category not in self.COLUMNS:
+            raise ValueError('ERR: Must enter a valid category of player_table to update')
+            return False
+
+        sql_statement = (
+            f'UPDATE player_table '
+            f'SET {category} = ? '
+            f'WHERE playerID = {playerID};'
+        )
+        params = (new_value,)
+        return self.bot.db_handler.execute_update(sql_statement, params)

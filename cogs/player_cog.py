@@ -1,4 +1,3 @@
-from cogs.player_data_view import PlayerDataView
 from discord.ext import commands
 from typing import Any
 
@@ -6,7 +5,7 @@ from typing import Any
 class PlayerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.dao = self.bot.get_cog('PlayerDAO')
+        self.player_dao = self.bot.get_cog('PlayerDAO')
         if not (player_dao):
             await ctx.send('PlayerDAO cog is not loaded.')
             return
@@ -16,7 +15,7 @@ class PlayerCommands(commands.Cog):
         for key, value in kwargs.items():
             if ((key == 'league_username') or 
                 (key == 'discord_username') or 
-                (key == 'nickname')) and (self.dao.select_player(value) is not None):
+                (key == 'nickname')) and (self.player_dao.select_player(value) is not None):
                 continue
             else:
                 invalid_input[key] = value
@@ -35,7 +34,7 @@ class PlayerCommands(commands.Cog):
                     await ctx.send(f'{key} is not a valid category for names in the database.')
             return
 
-        row = await self.dao.select_player(league_username=league_username)
+        row = await self.player_dao.select_player(league_username=league_username)
         if (not row):
             await ctx.send(f'No player found with league username: \'{league_username}\'')
             return
@@ -47,5 +46,16 @@ class PlayerCommands(commands.Cog):
         return
 
     @commands.command(name='change_names')
-    async def update_player_names(self, ctx, league_username: str):
-        pass
+    async def update_player_names(self, ctx, league_username; str):
+        invalid_input = _validate_input(kwargs)
+        if len(invalid_input) > 0:
+            for key, value in invalid_input.items():
+                if (key in ['league_username', 'discord_username', 'nickname']):
+                    await ctx.send(f'{key}: {value} was not found in the database')
+                else:
+                    await ctx.send(f'{key} is not a valid category for names in the database.')
+            return
+
+        #TODO: make a modal pop-up to change a name of a player
+
+        return 

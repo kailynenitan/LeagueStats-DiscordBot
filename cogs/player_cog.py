@@ -1,4 +1,4 @@
-from cogs.player_ui import player_names_embed
+from cogs.player_ui import *
 from discord.ext import commands
 from typing import Any
 
@@ -25,13 +25,9 @@ class PlayerCommands(commands.Cog):
 
     @commands.command(name='names')
     async def select_all_names(self, ctx, league_username: str):
-        invalid_input = self._validate_input(league_username=league_username)
-        if len(invalid_input) > 0:
-            for key, value in invalid_input.items():
-                if (key in ['league_username', 'discord_username', 'nickname']):
-                    await ctx.send(f'{key}: {value} was not found in the database')
-                else:
-                    await ctx.send(f'{key} is not a valid category for names in the database.')
+        invalid_input = await self._validate_input(league_username=league_username)
+        for key, value in invalid_input.items():
+            await ctx.send(f':warning: User "{value}" was not found in the database.')
             return
 
         row = await self.player_dao.select_player(league_username=league_username)
@@ -39,23 +35,13 @@ class PlayerCommands(commands.Cog):
             await ctx.send(f'No player found with league username: \'{league_username}\'')
             return
 
-        embed = player_names_embed(row)
-        await ctx.send(embed=embed)
+        player_dict = {
+            'playerID': row[0],
+            'league_username': row[1],
+            'discord_username': row[2],
+            'nickname': row[3]
+        }
+        view = PlayerView(player_dict, ctx.author.id)
+        embed = view.player_names_embed()
+        await ctx.send(embed=embed, view=view)
         return
-
-'''
-    @commands.command(name='change_names')
-    async def update_player_names(self, ctx, league_username; str):
-        invalid_input = _validate_input(kwargs)
-        if len(invalid_input) > 0:
-            for key, value in invalid_input.items():
-                if (key in ['league_username', 'discord_username', 'nickname']):
-                    await ctx.send(f'{key}: {value} was not found in the database')
-                else:
-                    await ctx.send(f'{key} is not a valid category for names in the database.')
-            return
-
-        #TODO: make a modal pop-up to change a name of a player
-
-        return 
-'''

@@ -16,6 +16,7 @@ class PlayerView(discord.ui.View):
         super().__init__(timeout=300)
         self.player_data = player_data
         self.authorID = authorID
+        self.SAVEID = 1
 
     def create_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -39,11 +40,6 @@ class PlayerView(discord.ui.View):
         )
         return embed
 
-    def _enable_save_button(self):
-        SAVEID = 1
-        item = self.find_item(SAVEID)
-        item.disabled = True
-
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.authorID:
             await interaction.response.send_message('You cannot edit this session.', ephemeral=True)
@@ -54,19 +50,19 @@ class PlayerView(discord.ui.View):
     async def league_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('league_username', self.player_data, self)
         await interaction.response.send_modal(modal)
-        _enable_save_button()
+        self.find_item(self.SAVEID).disabled = False
         
     @discord.ui.button(label='Change Discord Username', style=discord.ButtonStyle.primary, row=0)
     async def discord_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('discord_username', self.player_data, self)
         await interaction.response.send_modal(modal)
-        _enable_save_button()
+        self.find_item(self.SAVEID).disabled = False
 
     @discord.ui.button(label='Change Nickname', style=discord.ButtonStyle.primary, row=0)
     async def nickname_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('nickname', self.player_data, self)
         await interaction.response.send_modal(modal)
-        _enable_save_button()
+        self.find_item(self.SAVEID).disabled = False
 
     @discord.ui.button(label='Save New Names', id=1, disabled=True, style=discord.ButtonStyle.success, row=1)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.button):
@@ -76,16 +72,14 @@ class PlayerView(discord.ui.View):
             return
 
         try:
-            # TODO write below 3 lines as a for loop for simplicity
-            await player_dao.update_player(self.player_data['playerID'], 'league_username', self.player_data['league_username'])
-            await player_dao.update_player(self.player_data['playerID'], 'discord_username', self.player_data['discord_username'])
-            await player_dao.update_player(self.player_data['playerID'], 'nickname', self.player_data['nickname'])
+            playerID = self.player_data['playerID']
+            for category in ['league_username', 'discord_username', 'nickname']:
+                await player_dao.update_player(playerID, category, self.player_data[category])
 
-            save_item = self.find_item(self.saveID)
-            save_item.disabled = True
-
+            self.find_item(self.SAVEID).disabled = True
             embed = self.create_embed()
             await interaction.response.edit_message(embed=embed, view=self)
+
         except Exception as e:
             await interaction.response.send_message(f'Failed to update player data: {e}', ephemeral=True)
             return

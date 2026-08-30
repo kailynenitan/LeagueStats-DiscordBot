@@ -16,13 +16,6 @@ class PlayerView(discord.ui.View):
         super().__init__(timeout=300)
         self.player_data = player_data
         self.authorID = authorID
-        self.saveID = 1
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.authorID:
-            await interaction.response.send_message('You cannot edit this session.', ephemeral=True)
-            return False
-        return True
 
     def create_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -46,24 +39,34 @@ class PlayerView(discord.ui.View):
         )
         return embed
 
+    def _enable_save_button(self):
+        SAVEID = 1
+        item = self.find_item(SAVEID)
+        item.disabled = True
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.authorID:
+            await interaction.response.send_message('You cannot edit this session.', ephemeral=True)
+            return False
+        return True
+
     @discord.ui.button(label='Change League Username', style=discord.ButtonStyle.primary, row=0)
     async def league_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('league_username', self.player_data, self)
         await interaction.response.send_modal(modal)
+        _enable_save_button()
         
     @discord.ui.button(label='Change Discord Username', style=discord.ButtonStyle.primary, row=0)
     async def discord_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('discord_username', self.player_data, self)
         await interaction.response.send_modal(modal)
+        _enable_save_button()
 
     @discord.ui.button(label='Change Nickname', style=discord.ButtonStyle.primary, row=0)
     async def nickname_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('nickname', self.player_data, self)
         await interaction.response.send_modal(modal)
-
-        # A new nickname was entered -> enable save button
-        save_item = self.find_item(self.saveID)
-        save_item.disabled = False
+        _enable_save_button()
 
     @discord.ui.button(label='Save New Names', id=1, disabled=True, style=discord.ButtonStyle.success, row=1)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.button):

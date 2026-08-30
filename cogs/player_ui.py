@@ -16,6 +16,7 @@ class PlayerView(discord.ui.View):
         super().__init__(timeout=300)
         self.player_data = player_data
         self.authorID = authorID
+        self.saveID = 1
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.authorID:
@@ -57,15 +58,14 @@ class PlayerView(discord.ui.View):
 
     @discord.ui.button(label='Change Nickname', style=discord.ButtonStyle.primary, row=0)
     async def nickname_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        prev_name = self.player_data['nickname']
         modal = RenameModal('nickname', self.player_data, self)
         await interaction.response.send_modal(modal)
 
-        new_name = self.player_data['nickname']
-        if prev_name != new_name:
+        # A new nickname was entered -> enable save button
+        save_item = self.find_item(self.saveID)
+        save_item.disabled = False
 
-
-    @discord.ui.Button(label='Save New Names', custom_id='save_btn', disabled=True, style=discord.ButtonStyle.success, row=1)
+    @discord.ui.button(label='Save New Names', id=1, disabled=True, style=discord.ButtonStyle.success, row=1)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.button):
         player_dao = interaction.client.get_cog('PlayerDAO')
         if (player_dao is None):
@@ -73,9 +73,16 @@ class PlayerView(discord.ui.View):
             return
 
         try:
+            # TODO write below 3 lines as a for loop for simplicity
             await player_dao.update_player(self.player_data['playerID'], 'league_username', self.player_data['league_username'])
             await player_dao.update_player(self.player_data['playerID'], 'discord_username', self.player_data['discord_username'])
             await player_dao.update_player(self.player_data['playerID'], 'nickname', self.player_data['nickname'])
+
+            save_item = self.find_item(self.saveID)
+            save_item.disabled = True
+
+            embed = self.create_embed()
+            await interaction.response.edit_message(embed=embed, view=self)
         except Exception as e:
             await interaction.response.send_message(f'Failed to update player data: {e}', ephemeral=True)
             return
@@ -84,7 +91,7 @@ class PlayerView(discord.ui.View):
             self, interaction: discord.Interaction[discord.Client], error: Exceptionj, item: discord.ui.Item[typing.Any]) -> None:
         tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
         message = f'An error occurred while processing the interaction for {str(item)}:\n```py\n{tb}\n```'
-        await interaction.response.send_message(message)
+        await interaction.response.send_message(message, ephemeral=True)
 
 
 class RenameModal(discord.ui.Modal):

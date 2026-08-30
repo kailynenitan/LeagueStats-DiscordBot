@@ -1,4 +1,5 @@
 import discord
+import traceback
 
 '''
 Produce a Discord embed that shows the names of a player and allows the user to change any of the names.
@@ -22,9 +23,9 @@ class PlayerView(discord.ui.View):
             return False
         return True
 
-    def player_names_embed(self) -> discord.Embed:
+    def create_embed(self) -> discord.Embed:
         embed = discord.Embed(
-            title=f'Names Associated with {self.player_data[league_username]}',
+            title=f'Names Associated with {self.player_data['league_username']}',
             color=discord.Color.blurple()
         )
         embed.add_field(
@@ -44,41 +45,65 @@ class PlayerView(discord.ui.View):
         )
         return embed
 
-    @discord.ui.button(label='Change Name', style=discord.ButtonStyle.primary, row=0)
-    async def change_name_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        modal = ChangeNameModal(self)
+    @discord.ui.button(label='Change League Username', style=discord.ButtonStyle.primary, row=0)
+    async def league_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        modal = RenameModal('league_username', self.player_data, self)
+        await interaction.response.send_modal(modal)
+        
+    @discord.ui.button(label='Change Discord Username', style=discord.ButtonStyle.primary, row=0)
+    async def discord_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        modal = RenameModal('discord_username', self.player_data, self)
         await interaction.response.send_modal(modal)
 
-class ChangeNameModal(discord.ui.Modal):
+    @discord.ui.button(label='Change Nickname', style=discord.ButtonStyle.primary, row=0)
+    async def nickname_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        prev_name = self.player_data['nickname']
+        modal = RenameModal('nickname', self.player_data, self)
+        await interaction.response.send_modal(modal)
 
-    def __init__(self, player_data: dict, parent_view: 'PlayerView'):
-        super().__init__(title=f'Change Names')
+        new_name = self.player_data['nickname']
+        if prev_name != new_name:
+
+
+    @discord.ui.Button(label='Save New Names', custom_id='save_btn', disabled=True, style=discord.ButtonStyle.success, row=1)
+    async def save_button(self, interaction: discord.Interaction, button: discord.ui.button):
+        player_dao = interaction.client.get_cog('PlayerDAO')
+        if (player_dao is None):
+            await interaction.response.send_message('Player table data access object not found.', ephemeral=True)
+            return
+
+        try:
+            await player_dao.update_player(self.player_data['playerID'], 'league_username', self.player_data['league_username'])
+            await player_dao.update_player(self.player_data['playerID'], 'discord_username', self.player_data['discord_username'])
+            await player_dao.update_player(self.player_data['playerID'], 'nickname', self.player_data['nickname'])
+        except Exception as e:
+            await interaction.response.send_message(f'Failed to update player data: {e}', ephemeral=True)
+            return
+
+    async def on_error(
+            self, interaction: discord.Interaction[discord.Client], error: Exceptionj, item: discord.ui.Item[typing.Any]) -> None:
+        tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+        message = f'An error occurred while processing the interaction for {str(item)}:\n```py\n{tb}\n```'
+        await interaction.response.send_message(message)
+
+
+class RenameModal(discord.ui.Modal):
+
+    def __init__(self, category: str, player_data: dict, parent_view: 'PlayerView'):
+        super().__init__(title='Change Names')
+        self.category = category
         self.player_data = player_data
         self.parent_view = parent_view
 
-        '''
-        league_option = discord.SelectOption(label='League of Legends Username', emoji='nerd', default=True)
-        discord_option = discord.SelectOption(label='Discord Username', emoji='smiling_imp')
-        nickname_option = discord.SelectOption(label='Nickname', emoji='bust_in_silhouette')
-        option_list = [league_option, discord_option, nickname_option]
-        '''
-        self.select_column = discord.ui.Select(placeholder='Select name category to change')
-        self.select_column.add_option(
-            label='League of Legends Username', value='league_username',
-            emoji='nerd', default=True)
-        self.select_column.add_option(label='Discord Username', value='discord_username', emoji='smiling_imp')
-        self.select_column.add_option(label='Nickname', value='nickname', emoji='bust_in_silhouette')
+        self.name = discord.ui.TextInput(label='New Name', default=self.player_data[self.category])
+        self.add_item(self.name)
 
-        self.input_name = discord.ui.TextInput(label='New Name')
-
-        for item in [self.select_column, self.input_name]:
-            self.add_item(item)
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
-            self.player_data[self.select_column.value] = self.input_name.value
+            self.player_data[self.category] = self.name.value
         except Exception as e:
-            await interaction.response.send_message(f'ERR: {e}')
+            await interaction.response.send_message(f'ERR: {e}', ephemeral=True)
             return
 
         embed = self.parent_view.create_embed()

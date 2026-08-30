@@ -41,7 +41,8 @@ class PlayerCommands(commands.Cog):
             'discord_username': row[2],
             'nickname': row[3]
         }
-        view = PlayerView(player_dict, ctx.author.id)
-        embed = view.player_names_embed()
+        player_dict_copy = player_dict.copy()
+        view = PlayerView(player_dict_copy, ctx.author.id)
+        embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
         return

@@ -5,6 +5,16 @@ from discord.ext import commands
 class PerformanceHistoryDAO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.COLUMNS = [
+            'gameID',
+            'playerID',
+            'kills',
+            'deaths',
+            'assists',
+            'cs',
+            'gold',
+            'result'
+        ]
 
     async def insert_player_match(self, gameID: int, playerID: int, player_data: dict):
         # Insert an entry into game_player_table in the database
@@ -25,18 +35,11 @@ class PerformanceHistoryDAO(commands.Cog):
         )
         return self.bot.db_handler.execute_insert(sql_statement, params)
 
-    async def select_player_stat(self, ctx):
+    async def select_avg(self, stat: str):
         pass
-        # get avg of a specified stat per game for a specified player
 
-    async def select_stat_leaderboard(self, ctx):
+    async def select_top(self, stat: str):
         pass
-        # get leaderboard of all players for their avgs of a specified stat
 
-    async def select_player_winstreak(self, ctx):
+    async def select_bottom(self, stat: str):
         pass
-        # get winstreak of a specified player
-
-    async def select_winstreak_leaderboard(self, ctx):
-        pass
-        # get leaderboard of all current winstreaks in desc order

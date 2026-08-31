@@ -49,7 +49,7 @@ class GameDataView(discord.ui.View):
         overview_lines=[]
         for p in self.players_data:
             overview_lines.append(
-                    f'**{p['username']}**: {p['kills']}/{p['deaths']}/{p['assists']} | {p['cs']} CS | {p['gold']}g'
+                f'**{p['username']}**: {p['kills']}/{p['deaths']}/{p['assists']} | {p['cs']} CS | {p['gold']}g'
             )
 
         embed.add_field(
@@ -103,7 +103,7 @@ class GameDataView(discord.ui.View):
             for player_dict in self.players_data:
                 await player_dao.insert_player(player_dict['username'])
                 playerID = await player_dao.select_playerID(league_username=player_dict['username'])
-                await match_dao.insert_player_match(self.gameID, playerID, player_dict)
+                await perf_history_dao.insert_player_match(self.gameID, playerID, player_dict)
         except Exception as e:
             await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
             return
@@ -132,10 +132,15 @@ class CoreStatsModal(discord.ui.Modal):
         self.player_data = player_data
         self.parent_view = parent_view
 
-        self.kills = discord.ui.TextInput(label='Kills', default=str(player_data['kills']), max_length=5)
-        self.deaths = discord.ui.TextInput(label='Deaths', default=str(player_data['deaths']), max_length=5)
-        self.assists = discord.ui.TextInput(label='Assists', default=str(player_data['assists']), max_length=5)
-        self.cs = discord.ui.TextInput(label='CS (Creep Score)', default=str(player_data['cs']), max_length=5)
+        init_kills = str(player_data['kills'])[:5]
+        init_deaths = str(player_data['deaths'])[:5]
+        init_assists = str(player_data['assists'])[:5]
+        init_cs = str(player_data['cs'])[:5]
+
+        self.kills = discord.ui.TextInput(label='Kills', default=init_kills, max_length=5)
+        self.deaths = discord.ui.TextInput(label='Deaths', default=init_deaths, max_length=5)
+        self.assists = discord.ui.TextInput(label='Assists', default=init_assists, max_length=5)
+        self.cs = discord.ui.TextInput(label='CS (Creep Score)', default=init_cs, max_length=5)
 
         for item in [self.kills, self.deaths, self.assists, self.cs]:
             self.add_item(item)
@@ -160,8 +165,10 @@ class ExtraStatsModal(discord.ui.Modal):
         self.player_data = player_data
         self.parent_view = parent_view
 
+        init_gold = str(player_data['gold'])[:5]
+
         self.username = discord.ui.TextInput(label='Username', default=str(player_data['username']))
-        self.gold = discord.ui.TextInput(label='Gold', default=str(player_data['gold']))
+        self.gold = discord.ui.TextInput(label='Gold', default=init_gold)
 
         for item in [self.username, self.gold]:
             self.add_item(item)

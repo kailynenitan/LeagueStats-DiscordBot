@@ -82,13 +82,13 @@ class ImageCog(commands.Cog):
             player_result = game_result if player_num <= 5 else ('loss' if game_result == 'win' else 'win')
 
             data_dict = {
-                'username': stats[0] if stats[0] else None,
-                'kills': stats[1] if stats[1] else None,
-                'deaths': stats[2] if stats[2] else None,
-                'assists': stats[3] if stats[3] else None,
-                'cs': stats[4] if stats[4] else None,
-                'gold': stats[5] if stats[5] else None,
-                'result': player_result
+                'username': stats[0] if len(stats) > 0 else None,
+                'kills':    stats[1] if len(stats) > 1 else None,
+                'deaths':   stats[2] if len(stats) > 2 else None,
+                'assists':  stats[3] if len(stats) > 3 else None,
+                'cs':       stats[4] if len(stats) > 4 else None,
+                'gold':     stats[5] if len(stats) > 5 else None,
+                'result':   player_result
             }
             match_data.append(data_dict)
 

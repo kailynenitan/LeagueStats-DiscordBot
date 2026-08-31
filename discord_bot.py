@@ -9,6 +9,7 @@ from pathlib import Path
 
 from cogs.database_handler import DatabaseHandler
 from cogs.game_dao import GameDAO
+from cogs.leaderboard_cog import LeaderboardCommands
 from cogs.performance_history_dao import PerformanceHistoryDAO
 from cogs.player_cog import PlayerCommands
 from cogs.player_dao import PlayerDAO
@@ -49,6 +50,7 @@ class StatsBot(commands.Bot):
 
         await self.add_cog(ImageCog(self))
         await self.add_cog(PlayerCommands(self))
+        await self.add_cog(LeaderboardCommands(self))
 
         print(f'Logged in as {self.user}')
 

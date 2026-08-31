@@ -9,7 +9,7 @@ from pathlib import Path
 
 from cogs.database_handler import DatabaseHandler
 from cogs.game_dao import GameDAO
-from cogs.match_dao import MatchDAO
+from cogs.performance_history_dao import PerformanceHistoryDAO
 from cogs.player_cog import PlayerCommands
 from cogs.player_dao import PlayerDAO
 from cogs.image_cog import ImageCog
@@ -44,7 +44,7 @@ class StatsBot(commands.Bot):
         self.db_handler = self.get_cog('DatabaseHandler')
 
         await self.add_cog(GameDAO(self))
-        await self.add_cog(MatchDAO(self))
+        await self.add_cog(PerformanceHistoryDAO(self))
         await self.add_cog(PlayerDAO(self))
 
         await self.add_cog(ImageCog(self))

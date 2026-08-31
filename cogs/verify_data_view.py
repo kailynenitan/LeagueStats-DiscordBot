@@ -89,9 +89,9 @@ class GameDataView(discord.ui.View):
  
     @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        match_dao = interaction.client.get_cog('MatchDAO')
-        if (match_dao is None):
-            await interaction.response.send_message('Match data access object not found.', ephemeral=True)
+        perf_history_dao = interaction.client.get_cog('PerformanceHistoryDAO')
+        if (perf_history_dao is None):
+            await interaction.response.send_message('Performance history data access object not found.', ephemeral=True)
             return
 
         player_dao = interaction.client.get_cog('PlayerDAO')

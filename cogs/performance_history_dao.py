@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-class MatchDAO(commands.Cog):
+class PerformanceHistoryDAO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

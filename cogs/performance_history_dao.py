@@ -36,16 +36,21 @@ class PerformanceHistoryDAO(commands.Cog):
         return self.bot.db_handler.execute_insert(sql_statement, params)
 
     async def select_avg(self, stat: str, playerID: int):
+        # Get the average of a specific stat for a specific player
         sql_statement = (
-            f'SELECT AVG({stat}) '
+            f'SELECT AVG({stat}) as avg_value '
             f'FROM game_player_table '
             f'WHERE playerID = ?;'
         )
         params = (playerID, )
-        return self.bot.db_handler.execute_insert(sql_statement, params)
+        return self.bot.db_handler.execute_select(sql_statement, params, 1)
 
-    async def select_top(self, stat: str):
-        pass
-
-    async def select_bottom(self, stat: str):
-        pass
+    async def select_avg_list(self, stat: str):
+        # Get a descending list of averages of all players for a specific stat
+        sql_statement = (
+            f'SELECT playerID, AVG({stat}) as avg_value '
+            f'FROM game_player_table '
+            f'GROUP BY playerID '
+            f'ORDER BY avg_value DESC;'
+        )
+        return self.bot.db_handler.execute_select(sql_statement, fetch_size=-1)

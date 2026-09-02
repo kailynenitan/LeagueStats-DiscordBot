@@ -134,14 +134,25 @@ class DatabaseHandler(commands.Cog):
                     FOREIGN KEY(ace) REFERENCES player_table(playerID)
             );''')
  
+            #TODO add discord accoutn connection
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS player_table (
                     playerID INTEGER PRIMARY KEY,
-                    league_username TEXT NOT NULL UNIQUE,
                     discord_username TEXT,
                     nickname TEXT
             );''')
+
+
  
+            self.conn.execute('''
+                CREATE TABLE IF NOT EXISTS account_table (
+                    accountID INTEGER,
+                    playerID INTEGER,
+                    account_username,
+                    PRIMARY KEY(accountID, playerID),
+                    FOREIGN KEY(playerID) REFERENCES player_table(playerID)
+            );''')
+
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS game_player_table (
                     gameID INTEGER,

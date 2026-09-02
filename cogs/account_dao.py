@@ -1,0 +1,28 @@
+from discord.ext import commands
+
+
+class AccountDAO(commands.Cog):
+    ''' 
+    Holds commands to handle League account data
+    '''
+    
+    def __init__(self, bot):
+        self.bot = bot
+        self.UNASSIGNED_PLAYERID = 1
+        self.COLUMNS = ['accountID', 'playerID', 'account_username']
+
+    async def insert_account(self, account_username: str) -> int:
+        sql_statement = 'INSERT OR IGNORE INTO account_table (account_username, playerID) VALUES (?);'
+        params = (account_username, self.UNASSIGNED_PLAYERID)
+        return self.bot.db_handler.execute_insert(sql_statement, params)
+
+    async def select_account(self, account_username: str=None) -> (tuple) | None:
+        sql_statement = 'SELECT * FROM account_table WHERE account_username = ?;'
+        params = (account_username.strip(),)
+        return self.bot.db_handler.execute_select(sql_statement, params, 1)
+
+    async def select_accountID(self, account_username: str=None) -> int | None:
+        sql_statement = 'SELECT accountID FROM account_table WHERE account_username = ?;'
+        params = (account_username,)
+        row = self.bot.db_handler.execute_select(sql_statement, params, 1)
+        return row[0] if row else None 

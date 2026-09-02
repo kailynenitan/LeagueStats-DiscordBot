@@ -141,8 +141,6 @@ class DatabaseHandler(commands.Cog):
                     discord_username TEXT,
                     nickname TEXT
             );''')
-
-
  
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS account_table (

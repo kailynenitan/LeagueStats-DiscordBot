@@ -152,7 +152,7 @@ class DatabaseHandler(commands.Cog):
             );''')
 
             self.conn.execute('''
-                CREATE TABLE IF NOT EXISTS game_player_table (
+                CREATE TABLE IF NOT EXISTS performance_history_table (
                     gameID INTEGER,
                     playerID INTEGER,
                     kills INTEGER NOT NULL,

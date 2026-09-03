@@ -41,21 +41,11 @@ class ImageCog(commands.Cog):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
 
-        profile_cog = self.bot.get_cog('PlayerDAO')
-        if (profile_cog is None):
-            await ctx.send('ERR: Could not load profile_cog')
-            return
-
         game_cog = self.bot.get_cog('GameDAO')
         if (game_cog is None):
             await ctx.send('ERR: Could not load game_cog')
             return
         gameID = await game_cog.insert_game()
-
-        db_cog = self.bot.get_cog('DatabaseHandler')
-        if (db_cog is None):
-            await ctx.send('ERR: Could not load db_cog')
-            return
 
         # Read bytes from screenshot so ImageReader can interact
         # with the photo wihtout an open connection to the image.

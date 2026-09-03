@@ -2,14 +2,14 @@ import discord
 import traceback
 
 '''
-The purpose of GameDataView is to double check the text
+The purpose of VerifyDataView is to double check the text
 that the OCR read before inserting data into the database. Data
 for each player is read in line-by-line and a view is produced
 for each line of data. Each stat to be validated is sent to a
 text channel as a button that, when pressed, will produce a 
 modal where the user can edit the information.
 '''
-class GameDataView(discord.ui.View):
+class VerifyDataView(discord.ui.View):
 
     def __init__(self, gameID: int, players_data: list[dict], authorID: int):
         super().__init__(timeout=300)
@@ -28,7 +28,7 @@ class GameDataView(discord.ui.View):
         player = self.players_data[self.current_index]
         embed = discord.Embed(
             title=f'Verify Stats - Player {self.current_index + 1} of {len(self.players_data)}',
-            description=f'Reviewing stats for **{player['username']}**',
+            description=f'Reviewing stats for **{player['league_username']}**',
             color=discord.Color.blurple()
         )
         embed.add_field(name='Kills', value=str(player['kills']), inline=True)
@@ -49,7 +49,7 @@ class GameDataView(discord.ui.View):
         overview_lines=[]
         for p in self.players_data:
             overview_lines.append(
-                f'**{p['username']}**: {p['kills']}/{p['deaths']}/{p['assists']} | {p['cs']} CS | {p['gold']}g'
+                f'**{p['league_username']}**: {p['kills']}/{p['deaths']}/{p['assists']} | {p['cs']} CS | {p['gold']}g'
             )
 
         embed.add_field(
@@ -94,16 +94,16 @@ class GameDataView(discord.ui.View):
             await interaction.response.send_message('Performance history data access object not found.', ephemeral=True)
             return
 
-        player_dao = interaction.client.get_cog('PlayerDAO')
-        if (player_dao is None):
-            await interaction.response.send_message('Player table data access object not found.', ephemeral=True)
+        account_dao = interaction.client.get_cog('AccountDAO')
+        if (account_dao is None):
+            await interaction.response.send_message('Account table data access object not found.', ephemeral=True)
             return
 
         try:
             for player_dict in self.players_data:
-                await player_dao.insert_player(player_dict['username'])
-                playerID = await player_dao.select_playerID(league_username=player_dict['username'])
-                await perf_history_dao.insert_player_match(self.gameID, playerID, player_dict)
+                await account_dao.insert_account(player_dict['league_username'])
+                accountID = await account_dao.select_accountID(player_dict['league_username'])
+                await perf_history_dao.insert_player_match(self.gameID, accountID, player_dict)
         except Exception as e:
             await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
             return
@@ -128,7 +128,7 @@ class GameDataView(discord.ui.View):
 
 class CoreStatsModal(discord.ui.Modal):
     def __init__(self, player_data: dict, parent_view: 'GameDataView'):
-        super().__init__(title=f'Core Stats: {player_data['username']}')
+        super().__init__(title=f'Core Stats: {player_data['league_username']}')
         self.player_data = player_data
         self.parent_view = parent_view
 
@@ -161,16 +161,16 @@ class CoreStatsModal(discord.ui.Modal):
 
 class ExtraStatsModal(discord.ui.Modal):
     def __init__(self, player_data: dict, parent_view: 'GameDataView'):
-        super().__init__(title=f'Extra Stats: {player_data['username']}')
+        super().__init__(title=f'Extra Stats: {player_data['league_username']}')
         self.player_data = player_data
         self.parent_view = parent_view
 
         init_gold = str(player_data['gold'])[:5]
 
-        self.username = discord.ui.TextInput(label='Username', default=str(player_data['username']))
+        self.league_username = discord.ui.TextInput(label='Username', default=str(player_data['league_username']))
         self.gold = discord.ui.TextInput(label='Gold', default=init_gold)
 
-        for item in [self.username, self.gold]:
+        for item in [self.league_username, self.gold]:
             self.add_item(item)
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -181,7 +181,7 @@ class ExtraStatsModal(discord.ui.Modal):
             return
 
         try:
-            self.player_data['username'] = str(self.username.value)
+            self.player_data['league_username'] = str(self.league_username.value)
         except ValueError:
             await interaction.response.send_message('Must enter a username')
             return

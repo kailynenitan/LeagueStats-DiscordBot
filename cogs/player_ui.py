@@ -2,7 +2,7 @@ import discord
 import traceback
 
 '''
-Produce a Discord embed that shows the names of a player and allows the user to change any of the names.
+Produce a Discord embed that shows the Discord username and nickname of a player and allows the user to change any of the names.
 Args:
     player_data tuple[str]: One row of all columns in player_table for one specific player.
                             The tuple should match the tuple that is a result of a SELECT query
@@ -12,21 +12,15 @@ Returns:
 '''
 class PlayerView(discord.ui.View):
 
-    def __init__(self, player_data: dict, authorID: int):
+    def __init__(self, player_data: dict):
         super().__init__(timeout=300)
         self.player_data = player_data
-        self.authorID = authorID
-        self.SAVEID = 1
+        self.SAVEBUTTONID = 1
 
     def create_embed(self) -> discord.Embed:
         embed = discord.Embed(
-            title=f'Names Associated with {self.player_data['league_username']}',
+            title=f'Names Associated with {self.player_data['discord_username']}',
             color=discord.Color.blurple()
-        )
-        embed.add_field(
-            name='League of Legends Username',
-            value=str(self.player_data['league_username']),
-            inline=True
         )
         embed.add_field(
             name='Discord Username',
@@ -40,29 +34,17 @@ class PlayerView(discord.ui.View):
         )
         return embed
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.authorID:
-            await interaction.response.send_message('You cannot edit this session.', ephemeral=True)
-            return False
-        return True
-
-    @discord.ui.button(label='Change League Username', style=discord.ButtonStyle.primary, row=0)
-    async def league_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        modal = RenameModal('league_username', self.player_data, self)
-        await interaction.response.send_modal(modal)
-        self.find_item(self.SAVEID).disabled = False
-        
     @discord.ui.button(label='Change Discord Username', style=discord.ButtonStyle.primary, row=0)
     async def discord_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('discord_username', self.player_data, self)
         await interaction.response.send_modal(modal)
-        self.find_item(self.SAVEID).disabled = False
+        self.find_item(self.SAVEBUTTONID).disabled = False
 
     @discord.ui.button(label='Change Nickname', style=discord.ButtonStyle.primary, row=0)
     async def nickname_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = RenameModal('nickname', self.player_data, self)
         await interaction.response.send_modal(modal)
-        self.find_item(self.SAVEID).disabled = False
+        self.find_item(self.SAVEBUTTONID).disabled = False
 
     @discord.ui.button(label='Save New Names', id=1, disabled=True, style=discord.ButtonStyle.success, row=1)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.button):
@@ -73,10 +55,10 @@ class PlayerView(discord.ui.View):
 
         try:
             playerID = self.player_data['playerID']
-            for category in ['league_username', 'discord_username', 'nickname']:
+            for category in ['discord_username', 'nickname']:
                 await player_dao.update_player(playerID, category, self.player_data[category])
 
-            self.find_item(self.SAVEID).disabled = True
+            self.find_item(self.SAVEBUTTONID).disabled = True
             embed = self.create_embed()
             await interaction.response.edit_message(embed=embed, view=self)
 

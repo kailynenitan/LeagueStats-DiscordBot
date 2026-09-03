@@ -6,14 +6,14 @@ class LeaderboardView(discord.ui.View):
         self.asc = asc
         self.current_index = 0
 
-    def avg_leaderboard_embed(self, data_category: str, player_data: list[tuple], size: int=3) -> discord.Embed:
+    def avg_leaderboard_embed(self, data_category: str, user_data: list[tuple], size: int=3) -> discord.Embed:
         embed = discord.Embed(
             title=f'{data_category} Leaderboard',
             color=discord.Color.red()
         )
 
         for i in range(size):
-            (name, stat_avg) = player_data[i]
+            (name, stat_avg) = user_data[i]
             embed.add_field(name=name, value=str(stat_avg), inline=False)
 
         return embed

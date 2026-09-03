@@ -1,11 +1,8 @@
 import cv2
-import discord
 import easyocr
 import numpy as np
-import os
 import string
 import torch
-from dotenv import load_dotenv
 
 
 '''

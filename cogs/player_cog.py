@@ -6,7 +6,7 @@ from typing import Any
 class PlayerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.columns = ['league_username', 'discord_username', 'nickname']
+        self.columns = ['playerID', 'discord_username', 'nickname']
         self.player_dao = self.bot.get_cog('PlayerDAO')
         if not (self.player_dao):
             raise ConnectionError('PlayerDAO failed to load.')
@@ -22,27 +22,24 @@ class PlayerCommands(commands.Cog):
 
         return invalid_input
 
-
     @commands.command(name='names')
-    async def select_all_names(self, ctx, league_username: str):
-        invalid_input = await self._validate_input(league_username=league_username)
+    async def select_all_names(self, ctx, discord_username: str):
+        invalid_input = await self._validate_input(discord_username=discord_username)
         for key, value in invalid_input.items():
-            await ctx.send(f':warning: User "{value}" was not found in the database.')
+            await ctx.send(f'ERR: User \'{value}\' was not found in the database.')
             return
 
-        row = await self.player_dao.select_player(league_username=league_username)
+        row = await self.player_dao.select_player(discord_username)
         if (not row):
-            await ctx.send(f'No player found with league username: \'{league_username}\'')
+            await ctx.send(f'ERR: Account \'{discord_username}\' was not found in the database.')
             return
 
         player_dict = {
-            'playerID': row[0],
-            'league_username': row[1],
-            'discord_username': row[2],
-            'nickname': row[3]
+            'playerID':         row[0],
+            'discord_username': row[1],
+            'nickname':         row[2]
         }
-        player_dict_copy = player_dict.copy()
-        view = PlayerView(player_dict_copy, ctx.author.id)
+        view = PlayerView(player_dict.copy())
         embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
         return

@@ -130,8 +130,8 @@ class DatabaseHandler(commands.Cog):
                     timestamp TEXT NOT NULL,
                     mvp INTEGER,
                     ace INTEGER,
-                    FOREIGN KEY(mvp) REFERENCES player_table(playerID),
-                    FOREIGN KEY(ace) REFERENCES player_table(playerID)
+                    FOREIGN KEY(mvp) REFERENCES account_table(accountID),
+                    FOREIGN KEY(ace) REFERENCES account_table(accountID)
             );''')
  
             #TODO add discord accoutn connection
@@ -144,26 +144,25 @@ class DatabaseHandler(commands.Cog):
  
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS account_table (
-                    accountID INTEGER,
+                    accountID INTEGER PRIMARY KEY,
                     playerID INTEGER,
                     account_username,
-                    PRIMARY KEY(accountID, playerID),
                     FOREIGN KEY(playerID) REFERENCES player_table(playerID)
             );''')
 
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS performance_history_table (
                     gameID INTEGER,
-                    playerID INTEGER,
+                    accountID INTEGER,
                     kills INTEGER NOT NULL,
                     deaths INTEGER NOT NULL,
                     assists INTEGER NOT NULL,
                     cs INTEGER NOT NULL,
                     gold INTEGER NOT NULL,
                     result TEXT NOT NULL,
-                    PRIMARY KEY(gameID, playerID),
+                    PRIMARY KEY(gameID, accountID),
                     FOREIGN KEY(gameID) REFERENCES game_table(gameID),
-                    FOREIGN KEY(playerID) REFERENCES player_table(playerID)
+                    FOREIGN KEY(accountID) REFERENCES account_table(accountID)
             );''')
 
             self.conn.commit()

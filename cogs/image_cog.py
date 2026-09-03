@@ -7,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
 from cogs.ocr_handler import ImageReader
-from cogs.verify_data_view import GameDataView
+from cogs.verify_data_view import VerifyDataView
 
 
 
@@ -72,18 +72,18 @@ class ImageCog(commands.Cog):
             player_result = game_result if player_num <= 5 else ('loss' if game_result == 'win' else 'win')
 
             data_dict = {
-                'username': stats[0] if len(stats) > 0 else None,
-                'kills':    stats[1] if len(stats) > 1 else None,
-                'deaths':   stats[2] if len(stats) > 2 else None,
-                'assists':  stats[3] if len(stats) > 3 else None,
-                'cs':       stats[4] if len(stats) > 4 else None,
-                'gold':     stats[5] if len(stats) > 5 else None,
-                'result':   player_result
+                'league_username':  stats[0] if len(stats) > 0 else None,
+                'kills':            stats[1] if len(stats) > 1 else None,
+                'deaths':           stats[2] if len(stats) > 2 else None,
+                'assists':          stats[3] if len(stats) > 3 else None,
+                'cs':               stats[4] if len(stats) > 4 else None,
+                'gold':             stats[5] if len(stats) > 5 else None,
+                'result':           player_result
             }
             match_data.append(data_dict)
 
         match_data_copy = [dict(m) for m in match_data]
-        view = GameDataView(gameID, match_data_copy, authorID = ctx.author.id)
+        view = VerifyDataView(gameID, match_data_copy, authorID = ctx.author.id)
         embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
 

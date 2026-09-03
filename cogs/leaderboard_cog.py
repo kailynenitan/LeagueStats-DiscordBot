@@ -4,7 +4,7 @@ from typing import Any
 
 '''
 All commands in this cog produce an embed with a leaderboard of a stat that
-can be derived from the information saved in game_player_table.
+can be derived from the information saved in performance_history_table.
 '''
 class LeaderboardCommands(commands.Cog):
     def __init__(self, bot):

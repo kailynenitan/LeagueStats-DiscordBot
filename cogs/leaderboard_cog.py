@@ -10,17 +10,11 @@ class LeaderboardCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        self.perf_history_dao = self.bot.get_cog('PerformanceHistoryDAO')
-        if not (self.perf_history_dao):
-            raise ConnectionError('Performance history data access object failed to load.')
-            return
-        
-
     @commands.command()
     async def kills(self, ctx, size: int=3):
-        kill_list = await self.perf_history_dao.select_avg_list('kills') 
+        kill_list = await self.bot.perf_history_dao.select_avg_list('kills') 
         view = LeaderboardView()
-        embed = view.avg_leaderboard_embed('kills', kill_list, size)
+        embed = view.avg_leaderboard_embed('kills', kill_list, size if len(kill_list) >= size else len(kill_list))
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -30,7 +24,7 @@ class LeaderboardCommands(commands.Cog):
 
     @commands.command()
     async def deaths(self, ctx):
-        death_list = await self.perf_history_dao.select_avg_list('deaths') 
+        death_list = await self.bot.perf_history_dao.select_avg_list('deaths') 
         view = LeaderboardView()
         embed = view.avg_leaderboard_embed('deaths', death_list, size)
         await ctx.send(embed=embed)
@@ -42,7 +36,7 @@ class LeaderboardCommands(commands.Cog):
 
     @commands.command()
     async def assists(self, ctx):
-        assist_list = await self.perf_history_dao.select_avg_list('assists') 
+        assist_list = await self.bot.perf_history_dao.select_avg_list('assists') 
         view = LeaderboardView()
         embed = view.avg_leaderboard_embed('assists', assist_list, size)
         await ctx.send(embed=embed)
@@ -62,7 +56,7 @@ class LeaderboardCommands(commands.Cog):
 
     @commands.command()
     async def cs(self, ctx):
-        cs_list = await self.perf_history_dao.select_avg_list('cs') 
+        cs_list = await self.bot.perf_history_dao.select_avg_list('cs') 
         view = LeaderboardView()
         embed = view.avg_leaderboard_embed('cs', cs_list, size)
         await ctx.send(embed=embed)
@@ -73,7 +67,7 @@ class LeaderboardCommands(commands.Cog):
 
     @commands.command()
     async def gold(self, ctx):
-        gold_list = await self.perf_history_dao.select_avg_list('gold') 
+        gold_list = await self.bot.perf_history_dao.select_avg_list('gold') 
         view = LeaderboardView()
         embed = view.avg_leaderboard_embed('gold', gold, size)
         await ctx.send(embed=embed)

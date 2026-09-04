@@ -1,10 +1,9 @@
 import asyncio
 import discord
-from discord.ext import commands
 
-class PerformanceHistoryDAO(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+class PerformanceHistoryDAO():
+    def __init__(self, db_handler):
+        self.db_handler = db_handler
         self.COLUMNS = [
             'gameID',
             'accountID',
@@ -33,14 +32,14 @@ class PerformanceHistoryDAO(commands.Cog):
             player_data['gold'],
             player_data['result']
         )
-        return self.bot.db_handler.execute_insert(sql_statement, params)
+        return self.db_handler.execute_insert(sql_statement, params)
 
     async def select_avg(self, stat: str, accountID: int):
         # Get the average of a specific stat for a specific player
         sql_statement = ('SELECT AVG({stat}) as avg_value FROM performance_history_table WHERE accountID = ?;'
         )
         params = (accountID,)
-        return self.bot.db_handler.execute_select(sql_statement, params, 1)
+        return self.db_handler.execute_select(sql_statement, params, 1)
 
     async def select_avg_list(self, stat: str):
         # Get a descending list of averages of all players for a specific stat
@@ -50,4 +49,4 @@ class PerformanceHistoryDAO(commands.Cog):
             f'GROUP BY accountID '
             f'ORDER BY avg_value DESC;'
         )
-        return self.bot.db_handler.execute_select(sql_statement, fetch_size=-1)
+        return self.db_handler.execute_select(sql_statement, fetch_size=-1)

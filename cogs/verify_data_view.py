@@ -11,8 +11,9 @@ modal where the user can edit the information.
 '''
 class VerifyDataView(discord.ui.View):
 
-    def __init__(self, gameID: int, players_data: list[dict], authorID: int):
+    def __init__(self, bot, gameID: int, players_data: list[dict], authorID: int):
         super().__init__(timeout=300)
+        self.bot = bot
         self.gameID = gameID
         self.players_data = players_data
         self.authorID = authorID
@@ -89,21 +90,11 @@ class VerifyDataView(discord.ui.View):
  
     @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        perf_history_dao = interaction.client.get_cog('PerformanceHistoryDAO')
-        if (perf_history_dao is None):
-            await interaction.response.send_message('Performance history data access object not found.', ephemeral=True)
-            return
-
-        account_dao = interaction.client.get_cog('AccountDAO')
-        if (account_dao is None):
-            await interaction.response.send_message('Account table data access object not found.', ephemeral=True)
-            return
-
         try:
             for player_dict in self.players_data:
-                await account_dao.insert_account(player_dict['league_username'])
-                accountID = await account_dao.select_accountID(player_dict['league_username'])
-                await perf_history_dao.insert_player_match(self.gameID, accountID, player_dict)
+                await self.bot.account_dao.insert_account(player_dict['league_username'])
+                accountID = await self.bot.account_dao.select_accountID(player_dict['league_username'])
+                await self.bot.perf_history_dao.insert_player_match(self.gameID, accountID, player_dict)
         except Exception as e:
             await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
             return

@@ -2,9 +2,8 @@ import sqlite3
 from discord.ext import commands
 from pathlib import Path
 
-class DatabaseHandler(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+class DatabaseHandler():
+    def __init__(self):
         self.conn = None
 
         bot_dir = Path(__file__).resolve().parent.parent

@@ -12,8 +12,9 @@ Returns:
 '''
 class PlayerView(discord.ui.View):
 
-    def __init__(self, player_data: dict):
+    def __init__(self, bot, player_data: dict):
         super().__init__(timeout=300)
+        self.bot = bot
         self.player_data = player_data
         self.SAVEBUTTONID = 1
 
@@ -48,15 +49,10 @@ class PlayerView(discord.ui.View):
 
     @discord.ui.button(label='Save New Names', id=1, disabled=True, style=discord.ButtonStyle.success, row=1)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.button):
-        player_dao = interaction.client.get_cog('PlayerDAO')
-        if (player_dao is None):
-            await interaction.response.send_message('Player table data access object not found.', ephemeral=True)
-            return
-
         try:
             playerID = self.player_data['playerID']
             for category in ['discord_username', 'nickname']:
-                await player_dao.update_player(playerID, category, self.player_data[category])
+                await self.bot.player_dao.update_player(playerID, category, self.player_data[category])
 
             self.find_item(self.SAVEBUTTONID).disabled = True
             embed = self.create_embed()

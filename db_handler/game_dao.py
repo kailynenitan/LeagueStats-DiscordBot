@@ -5,9 +5,9 @@ from discord.ext import commands
 
 
 # WIP
-class GameDAO(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+class GameDAO():
+    def __init__(self, db_handler):
+        self.db_handler = db_handler
 
     async def insert_game(self):
         sql_statement = (
@@ -15,7 +15,7 @@ class GameDAO(commands.Cog):
             'VALUES (?);'
         )
         params = (datetime.now(),)
-        return self.bot.db_handler.execute_insert(sql_statement, params)
+        return self.db_handler.execute_insert(sql_statement, params)
 
     @commands.command()
     async def select_top_mvp(self, ctx):

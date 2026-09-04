@@ -7,16 +7,15 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from pathlib import Path
 
-from cogs.account_dao import AccountDAO
-from cogs.game_dao import GameDAO
-from cogs.performance_history_dao import PerformanceHistoryDAO
-from cogs.player_dao import PlayerDAO
+from db_handler.database_handler import DatabaseHandler
+from db_handler.account_dao import AccountDAO
+from db_handler.game_dao import GameDAO
+from db_handler.performance_history_dao import PerformanceHistoryDAO
+from db_handler.player_dao import PlayerDAO
 
 from cogs.image_cog import ImageCog
 from cogs.leaderboard_cog import LeaderboardCommands
 from cogs.player_cog import PlayerCommands
-
-from cogs.database_handler import DatabaseHandler
 
 # WIP
 class StatsBot(commands.Bot):
@@ -33,28 +32,26 @@ class StatsBot(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix='$', intents=intents)
         self.executor = ProcessPoolExecutor()
-        self.db_handler = None
+
+        self.db_handler = DatabaseHandler()
+        self.account_dao = AccountDAO(self.db_handler)
+        self.game_dao = GameDAO(self.db_handler)
+        self.perf_history_dao = PerformanceHistoryDAO(self.db_handler)
+        self.player_dao = PlayerDAO(self.db_handler)
 
     async def close(self):
         self.executor.shutdown()
-        self.get_cog('DatabaseHandler').close()
+        self.db_handler.close()
         await super().close()
         
     
     async def setup_hook(self):
-        await self.add_cog(AccountDAO(self))
-        await self.add_cog(GameDAO(self))
-        await self.add_cog(PerformanceHistoryDAO(self))
-        await self.add_cog(PlayerDAO(self))
-
         await self.add_cog(ImageCog(self))
         await self.add_cog(PlayerCommands(self))
         await self.add_cog(LeaderboardCommands(self))
 
-        await self.add_cog(DatabaseHandler(self))
-        self.db_handler = self.get_cog('DatabaseHandler')
-        self.db_handler.create_tables() 
-        await self.get_cog('PlayerDAO').insert_player('UNASSIGNED', 'UNASSIGNED')
+        self.db_handler.create_tables()
+        await self.player_dao.insert_player('UNASSIGNED', 'UNASSIGNED')
 
         print(f'Logged in as {self.user}')
 

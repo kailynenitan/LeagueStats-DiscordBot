@@ -7,15 +7,11 @@ class PlayerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.columns = ['playerID', 'discord_username', 'nickname']
-        self.player_dao = self.bot.get_cog('PlayerDAO')
-        if not (self.player_dao):
-            raise ConnectionError('PlayerDAO failed to load.')
-            return
 
     async def _validate_input(self, **kwargs) -> dict[str, Any]:
         invalid_input = {}
         for key, value in kwargs.items():
-            if (key in self.columns) and ((await self.player_dao.select_player(value)) is not None):
+            if (key in self.columns) and ((await self.bot.player_dao.select_player(value)) is not None):
                 continue
             else:
                 invalid_input[key] = value
@@ -29,7 +25,7 @@ class PlayerCommands(commands.Cog):
             await ctx.send(f'ERR: User \'{value}\' was not found in the database.')
             return
 
-        row = await self.player_dao.select_player(discord_username)
+        row = await self.bot.player_dao.select_player(discord_username)
         if (not row):
             await ctx.send(f'ERR: Account \'{discord_username}\' was not found in the database.')
             return

@@ -10,12 +10,10 @@ from cogs.ocr_handler import ImageReader
 from cogs.verify_data_view import VerifyDataView
 
 
-
-
+"""
+Holds commands that will insert match history data into the SQL database
+"""
 class ImageCog(commands.Cog):
-    """
-    Holds commands that will insert match history data into the SQL database
-    """
     
     def __init__(self, bot):
         self.bot = bot
@@ -41,11 +39,7 @@ class ImageCog(commands.Cog):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
 
-        game_cog = self.bot.get_cog('GameDAO')
-        if (game_cog is None):
-            await ctx.send('ERR: Could not load game_cog')
-            return
-        gameID = await game_cog.insert_game()
+        gameID = await self.bot.game_dao.insert_game()
 
         # Read bytes from screenshot so ImageReader can interact
         # with the photo wihtout an open connection to the image.
@@ -83,7 +77,7 @@ class ImageCog(commands.Cog):
             match_data.append(data_dict)
 
         match_data_copy = [dict(m) for m in match_data]
-        view = VerifyDataView(gameID, match_data_copy, authorID = ctx.author.id)
+        view = VerifyDataView(self.bot, gameID, match_data_copy, authorID = ctx.author.id)
         embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
 

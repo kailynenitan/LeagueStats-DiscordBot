@@ -11,10 +11,9 @@ modal where the user can edit the information.
 '''
 class VerifyDataView(discord.ui.View):
 
-    def __init__(self, bot, gameID: int, players_data: list[dict], authorID: int):
+    def __init__(self, bot, players_data: list[dict], authorID: int):
         super().__init__(timeout=300)
         self.bot = bot
-        self.gameID = gameID
         self.players_data = players_data
         self.authorID = authorID
         self.current_index = 0
@@ -91,10 +90,11 @@ class VerifyDataView(discord.ui.View):
     @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
+            gameID = await self.bot.game_dao.insert_game()
             for player_dict in self.players_data:
                 await self.bot.account_dao.insert_account(player_dict['league_username'])
                 accountID = await self.bot.account_dao.select_accountID(player_dict['league_username'])
-                await self.bot.perf_history_dao.insert_player_match(self.gameID, accountID, player_dict)
+                await self.bot.perf_history_dao.insert_player_match(gameID, accountID, player_dict)
         except Exception as e:
             await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
             return
@@ -118,7 +118,7 @@ class VerifyDataView(discord.ui.View):
 
 
 class CoreStatsModal(discord.ui.Modal):
-    def __init__(self, player_data: dict, parent_view: 'GameDataView'):
+    def __init__(self, player_data: dict, parent_view: 'VerifyDataView'):
         super().__init__(title=f'Core Stats: {player_data['league_username']}')
         self.player_data = player_data
         self.parent_view = parent_view
@@ -151,7 +151,7 @@ class CoreStatsModal(discord.ui.Modal):
 
 
 class ExtraStatsModal(discord.ui.Modal):
-    def __init__(self, player_data: dict, parent_view: 'GameDataView'):
+    def __init__(self, player_data: dict, parent_view: 'VerifyDataView'):
         super().__init__(title=f'Extra Stats: {player_data['league_username']}')
         self.player_data = player_data
         self.parent_view = parent_view

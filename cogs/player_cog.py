@@ -1,4 +1,4 @@
-from cogs.views.player_ui import *
+from cogs.views.player_view import *
 from discord.ext import commands
 from typing import Any
 

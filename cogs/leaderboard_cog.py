@@ -1,4 +1,4 @@
-from cogs.leaderboard_view import LeaderboardView
+from cogs.views.leaderboard_view import LeaderboardView
 from discord.ext import commands
 from typing import Any
 

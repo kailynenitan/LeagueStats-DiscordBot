@@ -1,13 +1,11 @@
 import asyncio
 import discord
-import os
 import numpy as np
 import sqlite3
-from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
 from cogs.helper.ocr_handler import ImageReader
-from cogs.verify_data_view import VerifyDataView
+from cogs.views.verify_data_view import VerifyDataView
 
 
 """

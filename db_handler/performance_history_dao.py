@@ -4,16 +4,6 @@ import discord
 class PerformanceHistoryDAO():
     def __init__(self, db_handler):
         self.db_handler = db_handler
-        self.COLUMNS = [
-            'gameID',
-            'accountID',
-            'kills',
-            'deaths',
-            'assists',
-            'cs',
-            'gold',
-            'result'
-        ]
 
     async def insert_player_match(self, gameID: int, accountID: int, player_data: dict):
         # Insert an entry into game_player_table in the database

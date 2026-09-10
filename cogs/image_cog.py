@@ -4,7 +4,7 @@ import numpy as np
 import sqlite3
 from discord.ext import commands
 
-from cogs.helper.ocr_handler import ImageReader
+from cogs.helpers.ocr_handler import ImageReader
 from cogs.views.verify_data_view import VerifyDataView
 
 
@@ -36,8 +36,6 @@ class ImageCog(commands.Cog):
             if not attachment.content_type.startswith('image'):
                 await ctx.send('ERR: Wrong attachment type.')
                 return
-
-        gameID = await self.bot.game_dao.insert_game()
 
         # Read bytes from screenshot so ImageReader can interact
         # with the photo wihtout an open connection to the image.

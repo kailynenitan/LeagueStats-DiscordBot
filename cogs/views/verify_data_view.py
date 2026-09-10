@@ -114,6 +114,16 @@ class VerifyDataView(discord.ui.View):
  
     @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Ensure all data is of the correct type before inserting into database
+        incomplete_player_data = []
+        for player_dict in self.players_data:
+            if None in player_dict.values():
+                incomplete_player_data.append(player_dict['league_username'])
+        if (len(incomplete_player_data) > 0):
+            raise Exception(f'Unable to save due to incomplete data for {incomplete_player_data}')
+            return
+
+        # Insert data into database
         try:
             gameID = await self.bot.game_dao.insert_game()
             for player_dict in self.players_data:
@@ -136,6 +146,7 @@ class VerifyDataView(discord.ui.View):
         tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
         message = f'An error occurred while processing the interaction for {str(item)}:\n```py\n{tb}\n```'
         await interaction.response.send_message(message)
+
 
 
 class CoreStatsModal(discord.ui.Modal):
@@ -169,6 +180,7 @@ class CoreStatsModal(discord.ui.Modal):
 
         embed = self.parent_view.create_embed()
         await interaction.response.edit_message(embed=embed, view=self.parent_view)
+
 
 
 class ExtraStatsModal(discord.ui.Modal):

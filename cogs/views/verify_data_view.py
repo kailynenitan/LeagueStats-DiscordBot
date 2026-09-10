@@ -24,6 +24,11 @@ class VerifyDataView(discord.ui.View):
             return False
         return True
 
+    def stop_view(self):
+        for item in self.children:
+            item.disabled=True
+        self.stop()
+
     def create_embed(self) -> discord.Embed:
         player = self.players_data[self.current_index]
         embed = discord.Embed(
@@ -60,6 +65,14 @@ class VerifyDataView(discord.ui.View):
         embed.set_footer(text='Click \'Confirm and Save to Database\' to save.\nUse the next and previous buttons to edit specific players.')
         return embed
 
+    def error_embed(self, err_msg: str=None) -> discord.Embed:
+        embed = discord.Embed(
+            title='ERROR',
+            description=err_msg,
+            color=discord.Color.red()
+        )
+        return embed
+
     @discord.ui.button(label='Overview All', style=discord.ButtonStyle.secondary, row=0)
     async def overview_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = self.create_overview_embed()
@@ -86,21 +99,29 @@ class VerifyDataView(discord.ui.View):
         player = self.players_data[self.current_index]
         modal = ExtraStatsModal(player, self)
         await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label='Delete Account', style=discord.ButtonStyle.danger, row=1)
+    async def delete_account(self, interaction: discord.Interaction, button: discord.ui.Button):
+        del self.players_data[self.current_index]
+        if (len(self.players_data) == 0):
+            error_msg = 'There are no more accounts to add to the database.'
+            embed = self.error_embed(error_msg)
+            await interaction.response.edit_message(embed=embed, view=self)
+            self.stop_view()
+            return
+        self.current_index = (self.current_index + 1) % len(self.players_data)
+        await interaction.response.edit_message(embed=self.create_embed(), view=self)
  
     @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
             gameID = await self.bot.game_dao.insert_game()
             for player_dict in self.players_data:
-                await self.bot.account_dao.insert_account(player_dict['league_username'])
-                accountID = await self.bot.account_dao.select_accountID(player_dict['league_username'])
+                accountID = await self.bot.account_dao.insert_account(player_dict['league_username'])
                 await self.bot.perf_history_dao.insert_player_match(gameID, accountID, player_dict)
         except Exception as e:
             await interaction.response.send_message(f'Failed to save player match data: {e}', ephemeral=True)
             return
-
-        for item in self.children:
-            item.disabled=True
 
         embed = discord.Embed(
             title='Data Saved Successfully.',
@@ -108,7 +129,7 @@ class VerifyDataView(discord.ui.View):
             color=discord.Color.green()
         )
         await interaction.response.edit_message(embed=embed, view=self)
-        self.stop()
+        self.stop_view()
      
     async def on_error(
             self, interaction: discord.Interaction[discord.Client], error: Exceptionj, item: discord.ui.Item[typing.Any]) -> None:

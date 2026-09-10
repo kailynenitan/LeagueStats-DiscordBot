@@ -6,7 +6,7 @@ import sqlite3
 from concurrent.futures import ProcessPoolExecutor
 from discord.ext import commands
 
-from cogs.ocr_handler import ImageReader
+from cogs.helper.ocr_handler import ImageReader
 from cogs.verify_data_view import VerifyDataView
 
 
@@ -77,7 +77,7 @@ class ImageCog(commands.Cog):
             match_data.append(data_dict)
 
         match_data_copy = [dict(m) for m in match_data]
-        view = VerifyDataView(self.bot, gameID, match_data_copy, authorID = ctx.author.id)
+        view = VerifyDataView(self.bot, match_data_copy, authorID = ctx.author.id)
         embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
 

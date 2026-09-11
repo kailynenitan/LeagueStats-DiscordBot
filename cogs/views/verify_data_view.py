@@ -115,13 +115,15 @@ class VerifyDataView(discord.ui.View):
     @discord.ui.button(label='Confirm and Save to Database', style=discord.ButtonStyle.success, row=2)
     async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Ensure all data is of the correct type before inserting into database
-        incomplete_player_data = []
+        integer_keys = ['kills', 'deaths', 'assists', 'cs', 'gold']
         for player_dict in self.players_data:
-            if None in player_dict.values():
-                incomplete_player_data.append(player_dict['league_username'])
-        if (len(incomplete_player_data) > 0):
-            raise Exception(f'Unable to save due to incomplete data for {incomplete_player_data}')
-            return
+            if (None in player_dict.values()):
+                raise ValueError(f'Incomplete data for account named: \'{player_dict['league_username']}\'')
+
+            for k in integer_keys:
+                v = player_dict[k]
+                if not isinstance(v, int):
+                    raise ValueError(f'Data is not valid for {player_dict['league_username']} (Field {k}:{v})')
 
         # Insert data into database
         try:
@@ -142,10 +144,10 @@ class VerifyDataView(discord.ui.View):
         self.stop_view()
      
     async def on_error(
-            self, interaction: discord.Interaction[discord.Client], error: Exceptionj, item: discord.ui.Item[typing.Any]) -> None:
+            self, interaction: discord.Interaction[discord.Client], error: Exception, item: discord.ui.Item[typing.Any]) -> None:
         tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
         message = f'An error occurred while processing the interaction for {str(item)}:\n```py\n{tb}\n```'
-        await interaction.response.send_message(message)
+        await interaction.response.send_message(message, ephemeral=True)
 
 
 

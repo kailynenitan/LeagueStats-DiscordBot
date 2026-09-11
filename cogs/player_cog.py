@@ -18,6 +18,21 @@ class PlayerCommands(commands.Cog):
 
         return invalid_input
 
+    '''
+    Assign a Discord user within the server to an account in account_table.
+    Produce a user select menu where the author of the interaction assigns a Discord user
+    to an account saved within the database.
+
+    Args: 
+        account_name (str): The name of the account to be assigned to a member of the Discord server
+            - correlates to 'league_username' in account_table
+    '''
+    @commands.command(name='assign')
+    async def insert_player(self, ctx):
+        #TODO call playerView for user selection to assign an account to a player
+        pass
+
+    '''
     @commands.command(name='names')
     async def select_all_names(self, ctx, discord_username: str):
         invalid_input = await self._validate_input(discord_username=discord_username)
@@ -39,3 +54,4 @@ class PlayerCommands(commands.Cog):
         embed = view.create_embed()
         await ctx.send(embed=embed, view=view)
         return
+    '''

@@ -8,6 +8,15 @@ from cogs.helpers.ocr_handler import ImageReader
 from cogs.views.verify_data_view import VerifyDataView
 
 
+
+def _to_int(value):
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except(TypeError, ValueError):
+        return None
+
 """
 Holds commands that will insert match history data into the SQL database
 """
@@ -63,11 +72,11 @@ class ImageCog(commands.Cog):
 
             data_dict = {
                 'league_username':  stats[0] if len(stats) > 0 else None,
-                'kills':            stats[1] if len(stats) > 1 else None,
-                'deaths':           stats[2] if len(stats) > 2 else None,
-                'assists':          stats[3] if len(stats) > 3 else None,
-                'cs':               stats[4] if len(stats) > 4 else None,
-                'gold':             stats[5] if len(stats) > 5 else None,
+                'kills':            _to_int(stats[1]) if len(stats) > 1 else None,
+                'deaths':           _to_int(stats[2]) if len(stats) > 2 else None,
+                'assists':          _to_int(stats[3]) if len(stats) > 3 else None,
+                'cs':               _to_int(stats[4]) if len(stats) > 4 else None,
+                'gold':             _to_int(stats[5].replace(',','')) if len(stats) > 5 else None,
                 'result':           player_result
             }
             match_data.append(data_dict)
